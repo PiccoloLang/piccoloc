@@ -25,7 +25,7 @@ LLVMValueRef buildLiteral(compiler* comp, astLiteral* literal) {
         case TOKEN_STRING: {
             char str[literal->literal.len - 1];
             memcpy(str, literal->literal.start + 1, literal->literal.len - 2);
-            str[literal->literal.len] = '\0';
+            str[literal->literal.len - 2] = '\0';
             return buildCall(comp, comp->rtlib->makeString.type, comp->rtlib->makeString.func, 1, buildString(comp, str));
         }
         default:

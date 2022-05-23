@@ -11,7 +11,8 @@
 
 #define RTLIB_FUNC_X \
     RTLIB_FUNC(runtimeError, TYPE_VOID, 5, true, TYPE_INT, TYPE_INT, TYPE_STR, TYPE_STR, TYPE_INT) \
-    RTLIB_FUNC(makeString, TYPE_VAL, 1, false, TYPE_STR)
+    RTLIB_FUNC(makeString, TYPE_VAL, 1, false, TYPE_STR) \
+    RTLIB_FUNC(add, TYPE_VAL, 2, false, TYPE_VAL, TYPE_VAL)
 
 typedef struct {
     LLVMValueRef func;

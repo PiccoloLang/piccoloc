@@ -85,7 +85,7 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
     
     while(!parserEOF(&prsr)) {
         ast* ast = parse(&prsr);
-        dumpAst(ast);
+        // dumpAst(ast);
         if(!prsr.hadError) {
             LLVMValueRef val = compile(&comp, ast);
             LLVMValueRef args[] = {val};

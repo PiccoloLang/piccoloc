@@ -12,8 +12,8 @@ typedef struct {
 
 typedef struct {
     obj obj;
-    char* str;
     int len;
+    char* str;
 } objStr;
 
 #endif
