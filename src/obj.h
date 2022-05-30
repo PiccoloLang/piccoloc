@@ -3,7 +3,7 @@
 #define OBJ_H
 
 typedef enum {
-    OBJ_STR
+    OBJ_STR, OBJ_QUOTE
 } objType;
 
 typedef struct {

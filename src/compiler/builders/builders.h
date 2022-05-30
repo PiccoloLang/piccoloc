@@ -40,6 +40,7 @@ LLVMValueRef buildSetPtr(compiler* comp, LLVMValueRef ptr, LLVMValueRef val);
 
 void compileToBlock(compiler* comp, LLVMBasicBlockRef block);
 
+LLVMValueRef buildIsNilCheck(compiler* comp, LLVMValueRef val);
 LLVMValueRef buildIsNumCheck(compiler* comp, LLVMValueRef val);
 LLVMValueRef buildIsBoolCheck(compiler* comp, LLVMValueRef val);
 LLVMValueRef buildTruthy(compiler* comp, LLVMValueRef val);
@@ -47,8 +48,11 @@ LLVMValueRef buildTruthy(compiler* comp, LLVMValueRef val);
 LLVMValueRef buildCall(compiler* comp, LLVMTypeRef type, LLVMValueRef func, int argc, ...);
 void buildRuntimeError(compiler* comp, token tkn, const char* msg, int argc, ...);
 
+LLVMValueRef buildStrOffset(compiler* comp, LLVMValueRef str, LLVMValueRef offset);
+
 LLVMValueRef buildLiteral(compiler* comp, astLiteral* ast);
 LLVMValueRef buildUnary(compiler* comp, astUnary* ast);
 LLVMValueRef buildBinary(compiler* comp, astBinary* ast);
+LLVMValueRef buildQuote(compiler* comp, astQuote* ast);
 
 #endif

@@ -27,7 +27,15 @@ static LLVMValueRef buildAdd(compiler* comp, astBinary* ast) { // TODO: make thi
     buildJump(comp, endBlock);
 
     compileToBlock(comp, numChoice.falseCond);
-    buildSetPtr(comp, resultPtr, buildCall(comp, comp->rtlib->add.type, comp->rtlib->add.func, 2, lhs, rhs));
+    LLVMValueRef addFnVal = buildCall(comp, comp->rtlib->add.type, comp->rtlib->add.func, 2, lhs, rhs);
+    buildChoiceRes errChoice = buildChoice(comp, buildIsNilCheck(comp, addFnVal));
+
+    compileToBlock(comp, errChoice.falseCond);
+    buildSetPtr(comp, resultPtr, addFnVal);
+    buildJump(comp, endBlock);
+
+    compileToBlock(comp, errChoice.trueCond);
+    buildRuntimeError(comp, ast->op, "Cannot add @ and @.", 2, lhs, rhs);
     buildJump(comp, endBlock);
 
     compileToBlock(comp, endBlock);

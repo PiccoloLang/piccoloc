@@ -25,7 +25,32 @@ parseRule parseRules[];
 
 
 static void error(parser* prsr, const char* msg) {
-    printf("error lol. '%.*s'.\n", prsr->curr.len, prsr->curr.start);
+    printf("Parsing Error: %s\n", msg);
+    printf("Line %d| ", prsr->curr.line);
+
+    const char* lineStart = prsr->curr.start;
+    while(lineStart != prsr->scnr.src && *lineStart != '\n')
+        lineStart--;
+    if(*lineStart == '\n')
+        lineStart++;
+
+    const char* lineEnd = lineStart;
+    while(*lineEnd != '\n' && *lineEnd != '\0')
+        lineEnd++;
+
+    printf("%.*s\n", lineEnd - lineStart, lineStart);
+    
+    int chars = 7;
+    int line = prsr->curr.line;
+    while(line > 0) {
+        chars++;
+        line /= 10;
+    }
+    chars += prsr->curr.start - lineStart;
+    for(int i = 0; i < chars; i++)
+        printf(" ");
+    printf("^\n");
+
     prsr->hadError = true;
 }
 
@@ -37,9 +62,20 @@ static void advance(parser* prsr) {
     }
 }
 
+static bool consume(parser* prsr, tokenType token) {
+    while(prsr->curr.type == TOKEN_NL)
+        advance(prsr);
+    if(prsr->curr.type == token) {
+        advance(prsr);
+        return true;
+    }
+    return false;
+}
+
 static ast* allocAst(parser* prsr, astType type, size_t size) {
     ast* ast = malloc(size);
     ast->type = type;
+    ast->next = NULL;
     ast->nextToFree = prsr->nodesToFree;
     prsr->nodesToFree = ast;
     return ast;
@@ -48,6 +84,22 @@ static ast* allocAst(parser* prsr, astType type, size_t size) {
 #define ALLOC_AST(prsr, type, typeEnum) (ast ## type*)(allocAst(prsr, AST_ ## typeEnum, sizeof(ast ## type)))
 
 
+
+static ast* parseExprList(parser* prsr, tokenType closingToken) {
+    ast* first = NULL;
+    ast* curr = NULL;
+    while(prsr->curr.type != closingToken) {
+        ast* ast = parse(prsr);
+        if(curr == NULL) {
+            curr = ast;
+            first = ast;
+        } else {
+            curr->next = ast;
+            curr = ast;
+        }
+    }
+    return first;
+}
 
 static ast* parseWithPrec(parser* prsr, precedence prec) {
     while(prsr->curr.type == TOKEN_NL)
@@ -94,14 +146,20 @@ static ast* parseBinary(parser* prsr, ast* lhs) {
 static ast* parseParen(parser* prsr) {
     advance(prsr);
     ast* res = parse(prsr);
-    while(prsr->curr.type == TOKEN_NL)
-        advance(prsr);
-    if(prsr->curr.type != TOKEN_RIGHT_PAREN) {
+    if(!consume(prsr, TOKEN_RIGHT_PAREN)) {
         error(prsr, "Expected ).");
-    } else {
-        advance(prsr);
     }
     return res;
+}
+
+static ast* parseQuote(parser* prsr) {
+    advance(prsr);
+    astQuote* res = ALLOC_AST(prsr, Quote, QUOTE);
+    res->first = parseExprList(prsr, TOKEN_RIGHT_PAREN);
+    if(!consume(prsr, TOKEN_RIGHT_PAREN)) {
+        error(prsr, "Expected >.");
+    }
+    return (ast*)res;
 }
 
 ast* parse(parser* prsr) {
@@ -115,6 +173,7 @@ parseRule parseRules[] = {
     [TOKEN_SLASH]       = {NULL,         parseBinary, PREC_MUL},
     [TOKEN_LEFT_PAREN]  = {parseParen,   NULL,        PREC_NONE},
     [TOKEN_RIGHT_PAREN] = {NULL,         NULL,        PREC_NONE},
+    [TOKEN_OPEN_QUOTE]  = {parseQuote,   NULL,        PREC_NONE},
     [TOKEN_GREATER]     = {NULL,         parseBinary, PREC_COMPARISON},
     [TOKEN_LESS]        = {NULL,         parseBinary, PREC_COMPARISON},
     [TOKEN_GREATER_EQ]  = {NULL,         parseBinary, PREC_COMPARISON},

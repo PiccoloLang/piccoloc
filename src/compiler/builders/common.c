@@ -111,6 +111,13 @@ void compileToBlock(compiler* comp, LLVMBasicBlockRef block) {
     LLVMPositionBuilderAtEnd(comp->builder, block);
 }
 
+
+
+LLVMValueRef buildIsNilCheck(compiler* comp, LLVMValueRef val) {
+    LLVMValueRef nil = LLVMBuildICmp(comp->builder, LLVMIntEQ, val, buildValue(comp, NIL_VAL()), "");
+    return nil;
+}
+
 LLVMValueRef buildIsNumCheck(compiler* comp, LLVMValueRef val) {
     LLVMValueRef bitwiseAndResult = LLVMBuildAnd(comp->builder, val, buildValue(comp, QNAN), ""); // val & QNAN
     LLVMValueRef result = LLVMBuildICmp(comp->builder, LLVMIntNE, bitwiseAndResult, buildValue(comp, QNAN), ""); // (val & QNAN) != QNAN
@@ -124,7 +131,7 @@ LLVMValueRef buildIsBoolCheck(compiler* comp, LLVMValueRef val) {
 }
 
 LLVMValueRef buildTruthy(compiler* comp, LLVMValueRef val) {
-    LLVMValueRef notNil = LLVMBuildICmp(comp->builder, LLVMIntNE, val, buildValue(comp, NIL_VAL()), "");
+    LLVMValueRef notNil = LLVMBuildNot(comp->builder, buildIsNilCheck(comp, val), "");
     LLVMValueRef notFalse = LLVMBuildICmp(comp->builder, LLVMIntNE, val, buildValue(comp, BOOL_VAL(false)), "");
     return buildAnd(comp, notNil, notFalse);
 }
@@ -173,5 +180,14 @@ void buildRuntimeError(compiler* comp, token tkn, const char* msg, int argc, ...
     va_end(argList);
     
     LLVMBuildCall2(comp->builder, comp->rtlib->runtimeError.type, comp->rtlib->runtimeError.func, args, argc + 5, "");
+
+}
+
+
+
+LLVMValueRef buildStrOffset(compiler* comp, LLVMValueRef str, LLVMValueRef offset) {
+    return LLVMBuildIntToPtr(comp->builder,
+        LLVMBuildAdd(comp->builder, LLVMBuildPtrToInt(comp->builder, str, LLVMInt64Type(), ""), offset, ""),
+        LLVMPointerType(LLVMInt8Type(), 0), "");
 
 }

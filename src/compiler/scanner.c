@@ -73,6 +73,9 @@ token scanToken(scanner* scnr) {
             } \
             return makeToken(scnr, TOKEN_ ## token1); \
         }
+    
+    #define TWO_LONG_CHAR(c1, c2, token) \
+        DOUBLE_CHAR(c1, c2, ERR, token)
 
     SINGLE_CHAR('+', PLUS)
     SINGLE_CHAR('-', MINUS)
@@ -80,6 +83,7 @@ token scanToken(scanner* scnr) {
     SINGLE_CHAR('/', SLASH)
     SINGLE_CHAR('(', LEFT_PAREN)
     SINGLE_CHAR(')', RIGHT_PAREN)
+    TWO_LONG_CHAR('`', '(', OPEN_QUOTE)
     DOUBLE_CHAR('>', '=', GREATER, GREATER_EQ)
     DOUBLE_CHAR('<', '=', LESS, LESS_EQ)
     SINGLE_CHAR('!', BANG)

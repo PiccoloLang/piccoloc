@@ -5,24 +5,52 @@
 #include <string.h>
 
 #include "../value.h"
-#include "../obj.h"
+#include "../ast.h"
+#include "obj.h"
+
+void printVal(val value);
+
+static void printAst(ast* expr) {
+    switch(expr->type) {
+        case AST_LITERAL: {
+            astLiteral* literal = (astLiteral*)expr;
+            printVal(literal->value);
+            break;
+        }
+        case AST_UNARY: {
+            astUnary* unary = (astUnary*)expr;
+            printf("%.*s", unary->op.len, unary->op.start);
+            printAst(unary->val);
+            break;
+        }
+    }
+}
 
 static void printObj(obj* obj) {
     if(obj->type == OBJ_STR) {
         objStr* str = (objStr*)obj;
-        printf("%s\n", str->str);
+        printf("%s", str->str);
+    } else if(obj->type == OBJ_QUOTE) {
+        printf("`(");
+        printAst((ast*)obj);
+        printf(")");
     }
 }
 
-void print(val value) {
+void printVal(val value) {
     if(IS_NUM(value))
-        printf("%g\n", AS_NUM(value));
+        printf("%g", AS_NUM(value));
     else if(IS_BOOL(value))
-        printf("%s\n", AS_BOOL(value) ? "true" : "false");
+        printf("%s", AS_BOOL(value) ? "true" : "false");
     else if(IS_NIL(value))
-        printf("nil\n");
+        printf("nil");
     else if(IS_OBJ(value))
         printObj(AS_OBJ(value));
+}
+
+void print(val value) {
+    printVal(value);
+    printf("\n");
 }
 
 void runtimeError(int lineNum, int offset, const char* line, const char* msg, int argc, ...) {
@@ -52,14 +80,6 @@ void runtimeError(int lineNum, int offset, const char* line, const char* msg, in
     
     exit(-1);
 }
-
-static obj* allocObj(size_t size, objType type) {
-    obj* res = malloc(sizeof(obj));
-    res->type = type;
-    return res;
-}
-
-#define ALLOC_OBJ(type, typeEnum) (obj ## type*)allocObj(sizeof(obj ## type), OBJ_ ## typeEnum)
 
 val makeString(const char* str) {
     objStr* strObj = ALLOC_OBJ(Str, STR);
