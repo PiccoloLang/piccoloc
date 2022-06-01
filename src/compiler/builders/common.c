@@ -150,6 +150,12 @@ LLVMValueRef buildCall(compiler* comp, LLVMTypeRef type, LLVMValueRef func, int 
     return LLVMBuildCall2(comp->builder, type, func, fnArgs, argc, "");
 }
 
+LLVMValueRef buildCallFromArgArray(compiler* comp, LLVMTypeRef type, LLVMValueRef func, int argc, LLVMValueRef* args) {
+    return LLVMBuildCall2(comp->builder, type, func, args, argc, "");
+}
+
+
+
 void buildRuntimeError(compiler* comp, token tkn, const char* msg, int argc, ...) {
 
     const char* lineStart = tkn.start;

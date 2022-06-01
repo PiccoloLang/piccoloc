@@ -46,6 +46,7 @@ LLVMValueRef buildIsBoolCheck(compiler* comp, LLVMValueRef val);
 LLVMValueRef buildTruthy(compiler* comp, LLVMValueRef val);
 
 LLVMValueRef buildCall(compiler* comp, LLVMTypeRef type, LLVMValueRef func, int argc, ...);
+LLVMValueRef buildCallFromArgArray(compiler* comp, LLVMTypeRef type, LLVMValueRef func, int argc, LLVMValueRef* args);
 void buildRuntimeError(compiler* comp, token tkn, const char* msg, int argc, ...);
 
 LLVMValueRef buildStrOffset(compiler* comp, LLVMValueRef str, LLVMValueRef offset);

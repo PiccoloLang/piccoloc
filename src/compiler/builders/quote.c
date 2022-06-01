@@ -17,12 +17,47 @@ static LLVMValueRef buildQuotedUnary(compiler* comp, astUnary* unary) {
     );
 }
 
+static LLVMValueRef buildQuotedBinary(compiler* comp, astBinary* binary) {
+    LLVMValueRef lhs = buildExprQuote(comp, binary->lhs);
+    LLVMValueRef rhs = buildExprQuote(comp, binary->rhs);
+    LLVMValueRef tokenStart = buildStrOffset(comp, comp->pkgSrcStr, buildInt(comp, binary->op.start - comp->pkg->src));
+    return buildCall(comp, comp->rtlib->makeQuotedBinary.type, comp->rtlib->makeQuotedBinary.func, 6,
+        lhs,
+        rhs, 
+        tokenStart,
+        buildInt(comp, binary->op.line),
+        buildInt(comp, binary->op.len),
+        buildInt(comp, binary->op.type)
+    );
+}
+
+static LLVMValueRef buildQuotedQuote(compiler* comp, astQuote* quote) {
+    int exprCnt = 0;
+    ast* curr = quote->first;
+    while(curr != NULL) {
+        exprCnt++;
+        curr = curr->next;
+    }
+    LLVMValueRef args[exprCnt + 1];
+    args[0] = buildInt(comp, exprCnt);
+    curr = quote->first;
+    for(int i = 1; i <= exprCnt; i++) {
+        args[i] = buildExprQuote(comp, curr);
+        curr = curr->next;
+    }
+    return buildCallFromArgArray(comp, comp->rtlib->makeQuotedQuote.type, comp->rtlib->makeQuotedQuote.func, exprCnt + 1, args);
+}
+
 static LLVMValueRef buildExprQuote(compiler* comp, ast* expr) {
     switch(expr->type) {
         case AST_LITERAL:
             return buildLiteral(comp, (astLiteral*)expr);
         case AST_UNARY:
             return buildQuotedUnary(comp, (astUnary*)expr);
+        case AST_BINARY:
+            return buildQuotedBinary(comp, (astBinary*)expr);
+        case AST_QUOTE:
+            return buildQuotedQuote(comp, (astQuote*)expr);
     }
 }
 

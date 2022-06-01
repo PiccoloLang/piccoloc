@@ -23,6 +23,26 @@ static void printAst(ast* expr) {
             printAst(unary->val);
             break;
         }
+        case AST_BINARY: {
+            astBinary* binary = (astBinary*)expr;
+            printAst(binary->lhs);
+            printf(" %.*s ", binary->op.len, binary->op.start);
+            printAst(binary->rhs);
+            break;
+        }
+        case AST_QUOTE: {
+            astQuote* quote = (astQuote*)expr;
+            printf("`(");
+            ast* curr = quote->first;
+            while(curr != NULL) {
+                printAst(curr);
+                if(curr->next != NULL)
+                    printf("; ");
+                curr = curr->next;
+            }
+            printf(")");
+            break;
+        }
     }
 }
 

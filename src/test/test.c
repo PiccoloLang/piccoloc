@@ -18,7 +18,9 @@ int main() {
     astUnary* a2 = aaa(u2);
     val u3 = makeQuotedUnary(u2, "-", 1, 1, TOKEN_MINUS);
     astUnary* a3 = aaa(u3);
+    val u4 = makeQuotedUnary(u3, "-", 1, 1, TOKEN_MINUS);
+    astUnary* a4 = aaa(u4);
 
-    print(u3);
+    print(u4);
 
 }
