@@ -43,6 +43,12 @@ static void printAst(ast* expr) {
             printf(")");
             break;
         }
+        case AST_EVAL: {
+            astEval* eval = (astEval*)expr;
+            printf("*");
+            printAst(eval->expr);
+            break;
+        }
     }
 }
 

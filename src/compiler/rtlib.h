@@ -13,9 +13,13 @@
     RTLIB_FUNC(runtimeError, TYPE_VOID, 5, true, TYPE_INT, TYPE_INT, TYPE_STR, TYPE_STR, TYPE_INT) \
     RTLIB_FUNC(makeString, TYPE_VAL, 1, false, TYPE_STR) \
     RTLIB_FUNC(add, TYPE_VAL, 2, false, TYPE_VAL, TYPE_VAL) \
+    \
     RTLIB_FUNC(makeQuotedUnary, TYPE_VAL, 5, false, TYPE_VAL, TYPE_STR, TYPE_INT, TYPE_INT, TYPE_INT) \
     RTLIB_FUNC(makeQuotedBinary, TYPE_VAL, 6, false, TYPE_VAL, TYPE_VAL, TYPE_STR, TYPE_INT, TYPE_INT, TYPE_INT) \
-    RTLIB_FUNC(makeQuotedQuote, TYPE_VAL, 1, true, TYPE_INT)
+    RTLIB_FUNC(makeQuotedQuote, TYPE_VAL, 1, true, TYPE_INT) \
+    RTLIB_FUNC(makeQuotedEval, TYPE_VAL, 1, false, TYPE_VAL) \
+    \
+    RTLIB_FUNC(evaluateQuote, TYPE_VAL, 1, false, TYPE_VAL)
 
 typedef struct {
     LLVMValueRef func;

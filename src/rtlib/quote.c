@@ -76,3 +76,12 @@ val makeQuotedQuote(int exprCnt, ...) {
 
     return OBJ_VAL(quoteObj);
 }
+
+val makeQuotedEval(val expr) {
+    astEval* eval = ALLOC_AST(Eval);
+    eval->ast.type = AST_EVAL;
+    
+    eval->expr = valToAst(expr);
+
+    return OBJ_VAL(eval);
+}

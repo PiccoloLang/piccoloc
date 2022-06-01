@@ -48,6 +48,11 @@ static LLVMValueRef buildQuotedQuote(compiler* comp, astQuote* quote) {
     return buildCallFromArgArray(comp, comp->rtlib->makeQuotedQuote.type, comp->rtlib->makeQuotedQuote.func, exprCnt + 1, args);
 }
 
+static LLVMValueRef buildQuotedEval(compiler* comp, astEval* eval) {
+    LLVMValueRef expr = buildQuote(comp, eval->expr);
+    return buildCall(comp, comp->rtlib->makeQuotedEval.type, comp->rtlib->makeQuotedEval.func, 1, expr);
+}
+
 static LLVMValueRef buildExprQuote(compiler* comp, ast* expr) {
     switch(expr->type) {
         case AST_LITERAL:
@@ -58,6 +63,8 @@ static LLVMValueRef buildExprQuote(compiler* comp, ast* expr) {
             return buildQuotedBinary(comp, (astBinary*)expr);
         case AST_QUOTE:
             return buildQuotedQuote(comp, (astQuote*)expr);
+        case AST_EVAL:
+            return buildQuotedEval(comp, (astEval*)expr);
     }
 }
 

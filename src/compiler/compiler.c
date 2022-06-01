@@ -26,6 +26,8 @@ LLVMValueRef compile(compiler* comp, ast* ast) {
             return buildBinary(comp, (astBinary*)ast);
         case AST_QUOTE:
             return buildQuote(comp, (astQuote*)ast);
+        case AST_EVAL:
+            return buildEval(comp, (astEval*)ast);
     }
     return NULL;
 }

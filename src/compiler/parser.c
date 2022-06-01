@@ -162,6 +162,13 @@ static ast* parseQuote(parser* prsr) {
     return (ast*)res;
 }
 
+static ast* parseEval(parser* prsr) {
+    advance(prsr);
+    astEval* res = ALLOC_AST(prsr, Eval, EVAL);
+    res->expr = parseWithPrec(prsr, PREC_ALL);
+    return (ast*)res;
+}
+
 ast* parse(parser* prsr) {
     return parseWithPrec(prsr, PREC_NONE);
 }
@@ -169,7 +176,7 @@ ast* parse(parser* prsr) {
 parseRule parseRules[] = {
     [TOKEN_PLUS]        = {parseUnary,   parseBinary, PREC_ADD},
     [TOKEN_MINUS]       = {parseUnary,   parseBinary, PREC_ADD},
-    [TOKEN_STAR]        = {NULL,         parseBinary, PREC_MUL},
+    [TOKEN_STAR]        = {parseEval,    parseBinary, PREC_MUL},
     [TOKEN_SLASH]       = {NULL,         parseBinary, PREC_MUL},
     [TOKEN_LEFT_PAREN]  = {parseParen,   NULL,        PREC_NONE},
     [TOKEN_RIGHT_PAREN] = {NULL,         NULL,        PREC_NONE},

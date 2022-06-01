@@ -55,5 +55,6 @@ LLVMValueRef buildLiteral(compiler* comp, astLiteral* ast);
 LLVMValueRef buildUnary(compiler* comp, astUnary* ast);
 LLVMValueRef buildBinary(compiler* comp, astBinary* ast);
 LLVMValueRef buildQuote(compiler* comp, astQuote* ast);
+LLVMValueRef buildEval(compiler* comp, astEval* ast);
 
 #endif

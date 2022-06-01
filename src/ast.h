@@ -11,7 +11,8 @@ typedef enum {
     AST_LITERAL,
     AST_UNARY,
     AST_BINARY,
-    AST_QUOTE
+    AST_QUOTE,
+    AST_EVAL
 } astType;
 
 typedef struct ast {
@@ -47,5 +48,10 @@ typedef struct {
     ast ast;
     ast* first;
 } astQuote;
+
+typedef struct {
+    ast ast;
+    ast* expr;
+} astEval;
 
 #endif
