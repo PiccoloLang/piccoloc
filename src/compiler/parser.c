@@ -186,7 +186,8 @@ parseRule parseRules[] = {
     [TOKEN_OR]          = {NULL,         parseBinary, PREC_LOGIC},
     [TOKEN_NUM]         = {parseLiteral, NULL,        PREC_NONE},
     [TOKEN_IDEN]        = {NULL,         NULL,        PREC_NONE},
-    [TOKEN_STRING]      = {parseLiteral, NULL,        PREC_NONE}
+    [TOKEN_STRING]      = {parseLiteral, NULL,        PREC_NONE},
+    [TOKEN_NL] = {0}
 };
 
 
