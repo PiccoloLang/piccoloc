@@ -43,6 +43,12 @@ static void dumpAstWithOffset(ast* expr, int off) {
             }
             break;
         }
+        case AST_EVAL: {
+            astEval* eval = (astEval*)expr;
+            printf("eval\n");
+            dumpAstWithOffset(eval->expr, off + 1);
+            break;
+        }
     }
 }
 

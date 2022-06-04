@@ -8,6 +8,7 @@
 #include "parser.h"
 #include "compiler.h"
 #include "../debug.h"
+#include "builders/builders.h"
 
 #include <stdio.h>
 
@@ -82,10 +83,12 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
 
     parser prsr;
     initParser(&prsr, pkg.src);
+
+    buildCall(&comp, comp.rtlib->initRTLib.type, comp.rtlib->initRTLib.func, 1, buildString(&comp, pkg.src));
     
     while(!parserEOF(&prsr)) {
         ast* ast = parse(&prsr);
-        // dumpAst(ast);
+        dumpAst(ast);
         if(!prsr.hadError) {
             LLVMValueRef val = compile(&comp, ast);
             LLVMValueRef args[] = {val};
@@ -110,7 +113,7 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
     free(bitcodeFilePath);
 
     remove("module");
-    char* command = multiconcat(5, "llvm-gcc ", shellFilePath, "module.bc ", shellFilePath, "rtlib/libpiccrtlib.a -o module >/dev/null 2>&1");
+    char* command = multiconcat(5, "llvm-gcc ", shellFilePath, "module.bc ", shellFilePath, "rtlib/libpiccrtlib.a -o module");
     system(command);
     free(command);
 

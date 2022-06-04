@@ -6,7 +6,11 @@
 
 #include "../value.h"
 #include "../ast.h"
-#include "obj.h"
+#include "../obj.h"
+
+#include "rtlib.h"
+
+engine rtEngine;
 
 void printVal(val value);
 
@@ -79,10 +83,8 @@ void print(val value) {
     printf("\n");
 }
 
-void runtimeError(int lineNum, int offset, const char* line, const char* msg, int argc, ...) {
+static void runtimeErrorUtil(int lineNum, int offset, const char* line, const char* msg, int argc, va_list args) {
     printf("Runtime Error: ");
-    va_list args;
-    va_start(args, argc);
     for(const char* c = msg; *c != '\0'; c++) {
         if(*c == '@') {
             val v = va_arg(args, val);
@@ -91,7 +93,6 @@ void runtimeError(int lineNum, int offset, const char* line, const char* msg, in
             printf("%c", *c);
         }
     }
-    va_end(args);
     printf("\n");
     printf("Line %d| %s\n", lineNum, line);
 
@@ -107,6 +108,28 @@ void runtimeError(int lineNum, int offset, const char* line, const char* msg, in
     exit(-1);
 }
 
+void runtimeError(int lineNum, int offset, const char* line, const char* msg, int argc, ...) {
+    va_list args;
+    va_start(args, argc);
+    runtimeErrorUtil(lineNum, offset, line, msg, argc, args);
+}
+
+void engineRuntimeErr(engine* engine, const char* msg, token tkn, int argc, ...) {
+    va_list args;
+    va_start(args, argc);
+    const char* line = tkn.start;
+    while(*line != '\n' && line != engine->src)
+        line--;
+    if(*line == '\n')
+        line++;
+    runtimeErrorUtil(tkn.line, tkn.start - engine->src - 1, line, msg, argc, args);
+}
+
+void initRTLib(const char* src) {
+    rtEngine.src = src;
+    rtEngine.runtimeError = engineRuntimeErr;
+}
+
 val makeString(const char* str) {
     objStr* strObj = ALLOC_OBJ(Str, STR);
     strObj->len = strlen(str);
@@ -114,21 +137,4 @@ val makeString(const char* str) {
     memcpy(strObj->str, str, strObj->len);
     strObj->str[strObj->len] = '\0';
     return OBJ_VAL(strObj);
-}
-
-val concatStrings(objStr* s1, objStr* s2) {
-    char buff[s1->len + s2->len + 1];
-    memcpy(buff, s1->str, s1->len);
-    memcpy(buff + s1->len, s2->str, s2->len + 1);
-    return makeString(buff);
-}
-
-val add(val v1, val v2) {
-    if(IS_OBJ(v1) && IS_OBJ(v2)) {
-        obj* o1 = AS_OBJ(v1);
-        obj* o2 = AS_OBJ(v2);
-        if(o1->type == OBJ_STR && o2->type == OBJ_STR)
-            return concatStrings((objStr*)o1, (objStr*)o2);
-    }
-    return NIL_VAL();
 }

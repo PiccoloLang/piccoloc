@@ -1,8 +1,7 @@
 
-#include "../token.h"
-#include "../value.h"
-#include "../ast.h"
-#include "../obj.h"
+#include "token.h"
+#include "value.h"
+#include "ast.h"
 #include "obj.h"
 
 #include <stdarg.h>

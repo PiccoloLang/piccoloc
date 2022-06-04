@@ -49,7 +49,7 @@ static LLVMValueRef buildQuotedQuote(compiler* comp, astQuote* quote) {
 }
 
 static LLVMValueRef buildQuotedEval(compiler* comp, astEval* eval) {
-    LLVMValueRef expr = buildQuote(comp, eval->expr);
+    LLVMValueRef expr = buildExprQuote(comp, eval->expr);
     return buildCall(comp, comp->rtlib->makeQuotedEval.type, comp->rtlib->makeQuotedEval.func, 1, expr);
 }
 
