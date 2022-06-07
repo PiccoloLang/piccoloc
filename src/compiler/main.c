@@ -22,6 +22,7 @@ char* concat(const char* s1, const char* s2) {
     char* res = malloc(l1 + l2 + 1);
     memcpy(res, s1, l1);
     memcpy(res + l1, s2, l2);
+    res[l1 + l2] = '\0';
     return res;
 }
 

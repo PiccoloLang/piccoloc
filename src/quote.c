@@ -24,35 +24,6 @@ static ast* valToAst(val value) {
     return (ast*)literal;
 }
 
-val makeQuotedUnary(val value, const char* start, int line, int len, int type) {
-    astUnary* quoteObj = ALLOC_AST(Unary);
-    quoteObj->ast.type = AST_UNARY;
-
-    quoteObj->val = valToAst(value);
-
-    quoteObj->op.start = start;
-    quoteObj->op.line = line;
-    quoteObj->op.len = len;
-    quoteObj->op.type = type;
-
-    return OBJ_VAL(quoteObj);
-}
-
-val makeQuotedBinary(val lhs, val rhs, const char* start, int line, int len, int type) {
-    astBinary* quoteObj = ALLOC_AST(Binary);
-    quoteObj->ast.type = AST_BINARY;
-
-    quoteObj->lhs = valToAst(lhs);
-    quoteObj->rhs = valToAst(rhs);
-
-    quoteObj->op.start = start;
-    quoteObj->op.line = line;
-    quoteObj->op.len = len;
-    quoteObj->op.type = type;
-
-    return OBJ_VAL(quoteObj);
-}
-
 val makeQuotedQuote(int exprCnt, ...) {
     astQuote* quoteObj = ALLOC_AST(Quote);
     quoteObj->ast.type = AST_QUOTE;
@@ -76,11 +47,4 @@ val makeQuotedQuote(int exprCnt, ...) {
     return OBJ_VAL(quoteObj);
 }
 
-val makeQuotedEval(val expr) {
-    astEval* eval = ALLOC_AST(Eval);
-    eval->ast.type = AST_EVAL;
-    
-    eval->expr = valToAst(expr);
-
-    return OBJ_VAL(eval);
-}
+#include "quote_gen.c"

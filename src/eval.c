@@ -1,5 +1,6 @@
 
 #include "eval.h"
+#include <string.h>
 
 val eval(engine* engine, ast* ast) {
     switch(ast->type) {

@@ -1,2 +1,7 @@
 build/
 .vscode/
+
+src/ast.h
+src/quote_gen.h
+src/quote_gen.c
+src/compiler/builders/quote_gen.c

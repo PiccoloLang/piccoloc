@@ -38,7 +38,7 @@ static void error(parser* prsr, const char* msg) {
     while(*lineEnd != '\n' && *lineEnd != '\0')
         lineEnd++;
 
-    printf("%.*s\n", lineEnd - lineStart, lineStart);
+    printf("%.*s\n", (int)(lineEnd - lineStart), lineStart);
     
     int chars = 7;
     int line = prsr->curr.line;
