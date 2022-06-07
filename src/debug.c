@@ -49,6 +49,12 @@ static void dumpAstWithOffset(ast* expr, int off) {
             dumpAstWithOffset(eval->expr, off + 1);
             break;
         }
+        case AST_INQUOTE: {
+            astInquote* inquote = (astInquote*)expr;
+            printf("inquote\n");
+            dumpAstWithOffset(inquote->expr, off + 1);
+            break;
+        }
     }
 }
 

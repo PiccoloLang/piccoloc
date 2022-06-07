@@ -87,6 +87,7 @@ token scanToken(scanner* scnr) {
     DOUBLE_CHAR('>', '=', GREATER, GREATER_EQ)
     DOUBLE_CHAR('<', '=', LESS, LESS_EQ)
     SINGLE_CHAR('!', BANG)
+    SINGLE_CHAR(',', COMMA)
 
     if(startChar == '\'') {
         advance(scnr);

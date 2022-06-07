@@ -64,8 +64,7 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
 
     LLVMModuleRef mod = LLVMModuleCreateWithName("module");
     
-    LLVMTypeRef paramTypes[] = {};
-    LLVMTypeRef fnType = LLVMFunctionType(LLVMVoidType(), paramTypes, 0, false);
+    LLVMTypeRef fnType = LLVMFunctionType(LLVMVoidType(), NULL, 0, false);
     LLVMValueRef mainFn = LLVMAddFunction(mod, "main", fnType);
     LLVMBasicBlockRef block = LLVMAppendBasicBlock(mainFn, "");
     LLVMBuilderRef builder = LLVMCreateBuilder();

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
-static LLVMTypeRef makeFuncType(LLVMTypeRef retType, int argCnt, bool vararg, ...) {
+static LLVMTypeRef makeFuncType(LLVMTypeRef retType, bool vararg, int argCnt, ...) {
 
     LLVMTypeRef argTypes[argCnt];
 
@@ -20,7 +20,7 @@ static LLVMTypeRef makeFuncType(LLVMTypeRef retType, int argCnt, bool vararg, ..
 void initRTlib(rtlibFuncs* rtlib, LLVMModuleRef mod) {
 
     #define RTLIB_FUNC(name, retType, argCnt, vararg, ...) \
-        rtlib->name.type = makeFuncType(retType, argCnt, vararg, __VA_ARGS__); \
+        rtlib->name.type = makeFuncType(retType, vararg, argCnt, __VA_ARGS__); \
         rtlib->name.func = LLVMAddFunction(mod, #name, rtlib->name.type);
 
     RTLIB_FUNC_X

@@ -19,6 +19,7 @@
     RTLIB_FUNC(makeQuotedBinary, TYPE_VAL, 6, false, TYPE_VAL, TYPE_VAL, TYPE_STR, TYPE_INT, TYPE_INT, TYPE_INT) \
     RTLIB_FUNC(makeQuotedQuote, TYPE_VAL, 1, true, TYPE_INT) \
     RTLIB_FUNC(makeQuotedEval, TYPE_VAL, 1, false, TYPE_VAL) \
+    RTLIB_FUNC(makeQuotedInquote, TYPE_VAL, 1, false, TYPE_VAL) \
     \
     RTLIB_FUNC(evaluateQuote, TYPE_VAL, 1, false, TYPE_VAL)
 

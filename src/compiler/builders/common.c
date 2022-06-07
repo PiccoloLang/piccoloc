@@ -6,10 +6,12 @@
 #include <string.h>
 
 LLVMValueRef buildInt(compiler* comp, int val) {
+    (void)comp;
     return LLVMConstInt(LLVMInt32Type(), val, false);
 }
 
 LLVMValueRef buildValue(compiler* comp, val val) {
+    (void)comp;
     return LLVMConstInt(LLVMInt64Type(), val, false);
 }
 
@@ -52,6 +54,7 @@ LLVMValueRef buildNumCmp(compiler* comp, LLVMValueRef a, LLVMValueRef b) {
 }
 
 LLVMValueRef buildDouble(compiler* comp, double val) {
+    (void)comp;
     return LLVMConstReal(LLVMDoubleType(), val);
 }
 

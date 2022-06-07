@@ -14,6 +14,11 @@ val eval(engine* engine, ast* ast) {
             return evalQuote(engine, (astQuote*)ast);
         case AST_EVAL:
             return evalEval(engine, (astEval*)ast);
+        case AST_INQUOTE: {
+            astInquote* inquote = (astInquote*)ast;
+            engine->runtimeError(engine, "Cannot inquote outside quote", inquote->op, 0);
+            return NIL_VAL();
+        }
     }
 }
 

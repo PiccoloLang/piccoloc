@@ -36,6 +36,8 @@ static LLVMValueRef buildExprQuote(compiler* comp, ast* expr) {
             return buildQuotedQuote(comp, (astQuote*)expr);
         case AST_EVAL:
             return buildQuotedEval(comp, (astEval*)expr);
+        case AST_INQUOTE:
+            return compile(comp, ((astInquote*)expr)->expr);
     }
 }
 

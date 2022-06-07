@@ -53,6 +53,12 @@ static void printAst(ast* expr) {
             printAst(eval->expr);
             break;
         }
+        case AST_INQUOTE: {
+            astInquote* inquote = (astInquote*)expr;
+            printf(",");
+            printAst(inquote->expr);
+            break;
+        }
     }
 }
 
@@ -83,7 +89,7 @@ void print(val value) {
     printf("\n");
 }
 
-static void runtimeErrorUtil(int lineNum, int offset, const char* line, const char* msg, int argc, va_list args) {
+static void runtimeErrorUtil(int lineNum, int offset, const char* line, const char* msg, va_list args) {
     printf("Runtime Error: ");
     for(const char* c = msg; *c != '\0'; c++) {
         if(*c == '@') {
@@ -111,7 +117,7 @@ static void runtimeErrorUtil(int lineNum, int offset, const char* line, const ch
 void runtimeError(int lineNum, int offset, const char* line, const char* msg, int argc, ...) {
     va_list args;
     va_start(args, argc);
-    runtimeErrorUtil(lineNum, offset, line, msg, argc, args);
+    runtimeErrorUtil(lineNum, offset, line, msg, args);
 }
 
 void engineRuntimeErr(engine* engine, const char* msg, token tkn, int argc, ...) {
@@ -122,7 +128,7 @@ void engineRuntimeErr(engine* engine, const char* msg, token tkn, int argc, ...)
         line--;
     if(*line == '\n')
         line++;
-    runtimeErrorUtil(tkn.line, tkn.start - engine->src - 1, line, msg, argc, args);
+    runtimeErrorUtil(tkn.line, tkn.start - engine->src - 1, line, msg, args);
 }
 
 void initRTLib(const char* src) {

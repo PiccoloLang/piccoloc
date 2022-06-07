@@ -1,6 +1,7 @@
 
 #include "compiler.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "builders/builders.h"
@@ -11,6 +12,11 @@ void initCompiler(compiler* comp, LLVMBuilderRef builder, LLVMValueRef func, pac
     comp->pkg = pkg;
     comp->pkgSrcStr = LLVMBuildGlobalStringPtr(builder, pkg->src, "");
     comp->rtlib = rtlib;
+}
+
+static void compilationError(compiler* comp, token tkn, const char* msg) {
+    (void)comp;
+    printf("Compilation error lol. Line %d. %s\n", tkn.len, msg);
 }
 
 LLVMValueRef compile(compiler* comp, ast* ast) {
@@ -28,6 +34,11 @@ LLVMValueRef compile(compiler* comp, ast* ast) {
             return buildQuote(comp, (astQuote*)ast);
         case AST_EVAL:
             return buildEval(comp, (astEval*)ast);
+        case AST_INQUOTE: {
+            astInquote* inquote = (astInquote*)ast;
+            compilationError(comp, inquote->op, "Cannot inquote outside quote.");
+            return NULL;
+        }
     }
     return NULL;
 }

@@ -13,6 +13,7 @@ typedef enum {
 	AST_BINARY,
 	AST_QUOTE,
 	AST_EVAL,
+	AST_INQUOTE,
 } astType;
 
 typedef struct ast {
@@ -51,6 +52,12 @@ typedef struct {
 	ast ast;
 	ast* expr;
 } astEval;
+
+typedef struct {
+	ast ast;
+	ast* expr;
+	token op;
+} astInquote;
 
 #endif
 

@@ -169,6 +169,15 @@ static ast* parseEval(parser* prsr) {
     return (ast*)res;
 }
 
+static ast* parseInquote(parser* prsr) {
+    token op = prsr->curr;
+    advance(prsr);
+    astInquote* res = ALLOC_AST(prsr, Inquote, INQUOTE);
+    res->expr = parseWithPrec(prsr, PREC_ALL);
+    res->op = op;
+    return (ast*)res;
+}
+
 ast* parse(parser* prsr) {
     return parseWithPrec(prsr, PREC_NONE);
 }
@@ -186,6 +195,7 @@ parseRule parseRules[] = {
     [TOKEN_GREATER_EQ]  = {NULL,         parseBinary, PREC_COMPARISON},
     [TOKEN_LESS_EQ]     = {NULL,         parseBinary, PREC_COMPARISON},
     [TOKEN_BANG]        = {parseUnary,   NULL,        PREC_NONE},
+    [TOKEN_COMMA]       = {parseInquote, NULL,        PREC_NONE},
     [TOKEN_TRUE]        = {parseLiteral, NULL,        PREC_NONE},
     [TOKEN_FALSE]       = {parseLiteral, NULL,        PREC_NONE},
     [TOKEN_NIL]         = {parseLiteral, NULL,        PREC_NONE},

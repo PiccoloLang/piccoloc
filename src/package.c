@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static char* readFile(char* path) {
+static char* readFile(const char* path) {
     FILE* f = fopen(path, "r");
     if(f == NULL)
         return NULL;

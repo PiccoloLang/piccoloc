@@ -38,6 +38,14 @@ ast_types = [
         'fields': [
             ['ast*', 'expr']
         ]
+    },
+    {
+        'name': 'Inquote',
+        'fields': [
+            ['ast*', 'expr'],
+            ['token', 'op']
+        ],
+        'exclude_quote_gen': True
     }
 ]
 

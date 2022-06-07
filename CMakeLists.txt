@@ -6,6 +6,8 @@ find_package(LLVM REQUIRED CONFIG)
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
+add_compile_options(-Wall -Wextra -pedantic -Werror)
+
 add_custom_command(OUTPUT src/ast.h
                    COMMAND python ${CMAKE_SOURCE_DIR}/src/gen/generate_ast_boilerplate.py
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
