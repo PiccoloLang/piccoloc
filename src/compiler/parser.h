@@ -17,6 +17,7 @@ typedef struct {
 void initParser(parser* prsr, const char* src);
 void freeParser(parser* prsr);
 ast* parse(parser* prsr);
+ast* parseExprList(parser* prsr, tokenType closingToken);
 bool parserEOF(parser* prsr);
 
 #endif

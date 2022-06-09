@@ -85,7 +85,7 @@ static ast* allocAst(parser* prsr, astType type, size_t size) {
 
 
 
-static ast* parseExprList(parser* prsr, tokenType closingToken) {
+ast* parseExprList(parser* prsr, tokenType closingToken) {
     ast* first = NULL;
     ast* curr = NULL;
     while(prsr->curr.type != closingToken) {
@@ -97,6 +97,8 @@ static ast* parseExprList(parser* prsr, tokenType closingToken) {
             curr->next = ast;
             curr = ast;
         }
+        while(prsr->curr.type == TOKEN_NL)
+            advance(prsr);
     }
     return first;
 }
@@ -121,6 +123,13 @@ static ast* parseWithPrec(parser* prsr, precedence prec) {
 static ast* parseLiteral(parser* prsr) {
     astLiteral* res = ALLOC_AST(prsr, Literal, LITERAL);
     res->literal = prsr->curr;
+    advance(prsr);
+    return (ast*)res;
+}
+
+static ast* parseVar(parser* prsr) {
+    astVar* res = ALLOC_AST(prsr, Var, VAR);
+    res->name = prsr->curr;
     advance(prsr);
     return (ast*)res;
 }
@@ -178,6 +187,28 @@ static ast* parseInquote(parser* prsr) {
     return (ast*)res;
 }
 
+static ast* parseVarDecl(parser* prsr) {
+    astVarDecl* res = ALLOC_AST(prsr, VarDecl, VARDECL);
+    // TODO: support const
+    advance(prsr);
+
+    if(prsr->curr.type != TOKEN_IDEN) {
+        error(prsr, "Expected variable name.");
+    } else {
+        res->name = prsr->curr;
+        advance(prsr);
+    }
+
+    if(prsr->curr.type != TOKEN_EQ) {
+        error(prsr, "Expected =.");
+    } else {
+        advance(prsr);
+    }
+
+    res->expr = parseWithPrec(prsr, PREC_ALL);
+    return (ast*)res;
+}
+
 ast* parse(parser* prsr) {
     return parseWithPrec(prsr, PREC_NONE);
 }
@@ -195,16 +226,19 @@ parseRule parseRules[] = {
     [TOKEN_GREATER_EQ]  = {NULL,         parseBinary, PREC_COMPARISON},
     [TOKEN_LESS_EQ]     = {NULL,         parseBinary, PREC_COMPARISON},
     [TOKEN_BANG]        = {parseUnary,   NULL,        PREC_NONE},
+    [TOKEN_EQ]          = {NULL,         NULL,        PREC_NONE},
     [TOKEN_COMMA]       = {parseInquote, NULL,        PREC_NONE},
     [TOKEN_TRUE]        = {parseLiteral, NULL,        PREC_NONE},
     [TOKEN_FALSE]       = {parseLiteral, NULL,        PREC_NONE},
     [TOKEN_NIL]         = {parseLiteral, NULL,        PREC_NONE},
     [TOKEN_AND]         = {NULL,         parseBinary, PREC_LOGIC},
     [TOKEN_OR]          = {NULL,         parseBinary, PREC_LOGIC},
+    [TOKEN_VAR]         = {parseVarDecl, NULL,        PREC_NONE},
     [TOKEN_NUM]         = {parseLiteral, NULL,        PREC_NONE},
-    [TOKEN_IDEN]        = {NULL,         NULL,        PREC_NONE},
+    [TOKEN_IDEN]        = {parseVar,     NULL,        PREC_NONE},
     [TOKEN_STRING]      = {parseLiteral, NULL,        PREC_NONE},
-    [TOKEN_NL] = {0}
+    [TOKEN_NL] = {0},
+    [TOKEN_EOF] = {0}
 };
 
 

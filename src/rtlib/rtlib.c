@@ -21,6 +21,11 @@ static void printAst(ast* expr) {
             printVal(literal->value);
             break;
         }
+        case AST_VAR: {
+            astVar* var = (astVar*)expr;
+            printf("%.*s", var->name.len, var->name.start);
+            break;
+        }
         case AST_UNARY: {
             astUnary* unary = (astUnary*)expr;
             printf("%.*s", unary->op.len, unary->op.start);
@@ -57,6 +62,12 @@ static void printAst(ast* expr) {
             astInquote* inquote = (astInquote*)expr;
             printf(",");
             printAst(inquote->expr);
+            break;
+        }
+        case AST_VARDECL: {
+            astVarDecl* varDecl = (astVarDecl*)expr;
+            printf("var %.*s = ", varDecl->name.len, varDecl->name.start); // TODO: add const here
+            printAst(varDecl->expr);
             break;
         }
     }

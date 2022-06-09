@@ -9,11 +9,13 @@
 
 typedef enum {
 	AST_LITERAL,
+	AST_VAR,
 	AST_UNARY,
 	AST_BINARY,
 	AST_QUOTE,
 	AST_EVAL,
 	AST_INQUOTE,
+	AST_VARDECL,
 } astType;
 
 typedef struct ast {
@@ -29,6 +31,11 @@ typedef struct {
 	val value; // used by runtime quoting
 	bool useValue;
 } astLiteral;
+
+typedef struct {
+	ast ast;
+	token name;
+} astVar;
 
 typedef struct {
 	ast ast;
@@ -58,6 +65,12 @@ typedef struct {
 	ast* expr;
 	token op;
 } astInquote;
+
+typedef struct {
+	ast ast;
+	token name;
+	ast* expr;
+} astVarDecl;
 
 #endif
 

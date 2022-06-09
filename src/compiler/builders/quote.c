@@ -28,6 +28,8 @@ static LLVMValueRef buildExprQuote(compiler* comp, ast* expr) {
     switch(expr->type) {
         case AST_LITERAL:
             return buildLiteral(comp, (astLiteral*)expr);
+        case AST_VAR:
+            return buildQuotedVar(comp, (astVar*)expr);
         case AST_UNARY:
             return buildQuotedUnary(comp, (astUnary*)expr);
         case AST_BINARY:
@@ -38,6 +40,8 @@ static LLVMValueRef buildExprQuote(compiler* comp, ast* expr) {
             return buildQuotedEval(comp, (astEval*)expr);
         case AST_INQUOTE:
             return compile(comp, ((astInquote*)expr)->expr);
+        case AST_VARDECL:
+            return buildQuotedVarDecl(comp, (astVarDecl*)expr);
     }
 }
 

@@ -87,6 +87,7 @@ token scanToken(scanner* scnr) {
     DOUBLE_CHAR('>', '=', GREATER, GREATER_EQ)
     DOUBLE_CHAR('<', '=', LESS, LESS_EQ)
     SINGLE_CHAR('!', BANG)
+    SINGLE_CHAR('=', EQ)
     SINGLE_CHAR(',', COMMA)
 
     if(startChar == '\'') {
@@ -119,6 +120,7 @@ token scanToken(scanner* scnr) {
         KEYWORD(nil, NIL)
         KEYWORD(and, AND)
         KEYWORD(or, OR)
+        KEYWORD(var, VAR)
 
         return makeToken(scnr, TOKEN_IDEN);
     }

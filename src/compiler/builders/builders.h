@@ -52,9 +52,11 @@ void buildRuntimeError(compiler* comp, token tkn, const char* msg, int argc, ...
 LLVMValueRef buildStrOffset(compiler* comp, LLVMValueRef str, LLVMValueRef offset);
 
 LLVMValueRef buildLiteral(compiler* comp, astLiteral* ast);
+LLVMValueRef buildVar(compiler* comp, astVar* ast);
 LLVMValueRef buildUnary(compiler* comp, astUnary* ast);
 LLVMValueRef buildBinary(compiler* comp, astBinary* ast);
 LLVMValueRef buildQuote(compiler* comp, astQuote* ast);
 LLVMValueRef buildEval(compiler* comp, astEval* ast);
+LLVMValueRef buildVarDecl(compiler* comp, astVarDecl* ast);
 
 #endif

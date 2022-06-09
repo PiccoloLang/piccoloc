@@ -20,6 +20,11 @@ static void dumpAstWithOffset(ast* expr, int off) {
             printf("literal '%.*s'\n", literal->literal.len, literal->literal.start);
             break;
         }
+        case AST_VAR: {
+            astVar* var = (astVar*)expr;
+            printf("var '%.*s'\n", var->name.len, var->name.start);
+            break;
+        }
         case AST_UNARY: {
             astUnary* unary = (astUnary*)expr;
             printf("unary '%.*s'\n", unary->op.len, unary->op.start);
@@ -53,6 +58,11 @@ static void dumpAstWithOffset(ast* expr, int off) {
             astInquote* inquote = (astInquote*)expr;
             printf("inquote\n");
             dumpAstWithOffset(inquote->expr, off + 1);
+            break;
+        }
+        case AST_VARDECL: {
+            astVarDecl* varDecl = (astVarDecl*)expr;
+            printf("vardecl %.*s\n", varDecl->name.len, varDecl->name.start);
             break;
         }
     }

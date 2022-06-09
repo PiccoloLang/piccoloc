@@ -6,6 +6,11 @@ val eval(engine* engine, ast* ast) {
     switch(ast->type) {
         case AST_LITERAL:
             return evalLiteral(engine, (astLiteral*)ast);
+        case AST_VAR: {
+            astVar* var = (astVar*)ast;
+            engine->runtimeError(engine, "Oops, evaluating variables at runtime is not implemented! x_x", var->name, 0);
+            return NIL_VAL();
+        }
         case AST_UNARY:
             return evalUnary(engine, (astUnary*)ast);
         case AST_BINARY:
@@ -17,6 +22,11 @@ val eval(engine* engine, ast* ast) {
         case AST_INQUOTE: {
             astInquote* inquote = (astInquote*)ast;
             engine->runtimeError(engine, "Cannot inquote outside quote", inquote->op, 0);
+            return NIL_VAL();
+        }
+        case AST_VARDECL: {
+            astVarDecl* varDecl = (astVarDecl*)ast;
+            engine->runtimeError(engine, "Uh oh, eval'ing var decls not implemented!", varDecl->name, 0);
             return NIL_VAL();
         }
     }

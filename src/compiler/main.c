@@ -9,6 +9,7 @@
 #include "compiler.h"
 #include "../debug.h"
 #include "builders/builders.h"
+#include "var_find.h"
 
 #include <stdio.h>
 
@@ -86,9 +87,14 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
 
     buildCall(&comp, comp.rtlib->initRTLib.type, comp.rtlib->initRTLib.func, 1, buildString(&comp, pkg.src));
     
-    while(!parserEOF(&prsr)) {
-        ast* ast = parse(&prsr);
-        // dumpAst(ast);
+    ast* curr = parseExprList(&prsr, TOKEN_EOF);
+    findVars(&comp, curr);
+
+    compileVarDecls(&comp, 0);
+
+    while(curr != NULL) {
+        ast* ast = curr;
+        curr = curr->next;
         if(!prsr.hadError) {
             LLVMValueRef val = compile(&comp, ast);
             LLVMValueRef args[] = {val};
@@ -98,6 +104,7 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
     }
 
     freeParser(&prsr);
+    freeCompiler(&comp);
 
     LLVMBuildRet(builder, NULL);
 

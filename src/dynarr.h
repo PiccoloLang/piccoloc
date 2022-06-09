@@ -6,9 +6,11 @@
 
 #define dynarr(type) struct {type* vals; int cnt; int cap;}
 
+typedef dynarr(void)* voidDynarrPtr;
+
 #define initDynarr(arr) \
     do { \
-        dynarr(void)* a = arr; \
+        voidDynarrPtr a = (voidDynarrPtr)(void*)arr; \
         a->vals = NULL; \
         a->cnt = 0; \
         a->cap = 0; \
@@ -16,7 +18,7 @@
 
 #define freeDynarr(arr) \
     do { \
-        dynarr(void)* a = arr; \
+        voidDynarrPtr a = (voidDynarrPtr)(void*)arr; \
         free(a->vals); \
         a->cnt = 0; \
         a->cap = 0; \

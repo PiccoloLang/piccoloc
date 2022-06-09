@@ -12,6 +12,12 @@ ast_types = [
         'exclude_quote_gen': True
     },
     {
+        'name': 'Var',
+        'fields': [
+            ['token', 'name']
+        ]
+    },
+    {
         'name': 'Unary',
         'fields': [
             ['ast*', 'val'],
@@ -46,6 +52,14 @@ ast_types = [
             ['token', 'op']
         ],
         'exclude_quote_gen': True
+    },
+    {
+        'name': 'VarDecl',
+        'fields': [
+            ['token', 'name'],
+            ['ast*', 'expr']
+        ],
+        'exclude_varfind_gen': True
     }
 ]
 
@@ -180,3 +194,50 @@ with open('src/quote_gen.c', 'w') as f:
 
             f.write('\treturn OBJ_VAL(quoteObj);\n')
             f.write('}\n\n')
+    
+# eval/quote.c
+with open('src/eval/quote_gen.c', 'w') as f:
+    
+    for ast in ast_types:
+        if not 'exclude_quote_gen' in ast:
+
+            f.write('case AST_' + ast['name'].upper() + ': {\n')
+            f.write('\tast' + ast['name'] + '* expr = (ast' + ast['name'] + '*)ast;\n')
+            f.write('\treturn makeQuoted' + ast['name'] + '(\n')
+            put_comma = False
+            for field in ast['fields']:
+                type = field[0]
+                name = field[1]
+                if type == 'ast*':
+                    if put_comma:
+                        f.write(',\n')
+                    put_comma = True
+                    f.write('\t\tmakeQuote(engine, expr->' + name + ')')
+                elif type == 'token':
+                    if put_comma:
+                        f.write(',\n')
+                    put_comma = True
+                    f.write('\t\texpr->' + name + '.start,\n')
+                    f.write('\t\texpr->' + name + '.line,\n')
+                    f.write('\t\texpr->' + name + '.len,\n')
+                    f.write('\t\texpr->' + name + '.type')
+            f.write('\n\t);\n')
+
+            f.write('}\n')
+
+# compiler/varFind.c
+with open('src/compiler/var_find_gen.c', 'w') as f:
+    
+    for ast in ast_types:
+        if not 'exclude_varfind_gen' in ast:
+            
+            f.write('case AST_' + ast['name'].upper() + ': {\n')
+            f.write('\tast' + ast['name'] + '* ast = (ast' + ast['name'] + '*)expr;\n')
+            f.write('\t(void)ast;\n')
+            for field in ast['fields']:
+                type = field[0]
+                name = field[1]
+                if type == 'ast*':
+                    f.write('\tfindVars(comp, ast->' + name + ');\n')
+            f.write('\tbreak;\n')
+            f.write('}\n')
