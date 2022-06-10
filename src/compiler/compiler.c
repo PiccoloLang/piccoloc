@@ -8,10 +8,16 @@
 #include "builders/builders.h"
 
 int findVar(compiler* comp, token tkn) {
-    for(int i = comp->vars.cnt - 1; i >= 0; i--)
-        if(tkn.len == comp->vars.vals[i].name.len && memcmp(tkn.start, comp->vars.vals[i].name.start, tkn.len) == 0)
-            return i;
-    return 0;
+    int bestUninitialized = -1;
+    for(int i = comp->vars.cnt - 1; i >= 0; i--) {
+        if(tkn.len == comp->vars.vals[i].name.len && memcmp(tkn.start, comp->vars.vals[i].name.start, tkn.len) == 0) {
+            if(comp->vars.vals[i].initialized)
+                return i;
+            if(bestUninitialized == -1)
+                bestUninitialized = i;
+        }
+    }
+    return bestUninitialized;
 }
 
 void initCompiler(compiler* comp, LLVMBuilderRef builder, LLVMValueRef func, package* pkg, rtlibFuncs* rtlib) {
@@ -35,6 +41,7 @@ static void compilationError(compiler* comp, token tkn, const char* msg) {
 void compileVarDecls(compiler* comp, int firstIdx) {
     for(int i = firstIdx; i < comp->vars.cnt; i++) {
         comp->vars.vals[i].alloc = buildValAlloc(comp);
+        buildSetPtr(comp, comp->vars.vals[i].alloc, buildValue(comp, NIL_VAL()));
     }
 }
 
@@ -51,6 +58,8 @@ LLVMValueRef compile(compiler* comp, ast* ast) {
             return buildUnary(comp, (astUnary*)ast);
         case AST_BINARY:
             return buildBinary(comp, (astBinary*)ast);
+        case AST_BLOCK:
+            return buildBlock(comp, (astBlock*)ast);
         case AST_QUOTE:
             return buildQuote(comp, (astQuote*)ast);
         case AST_EVAL:

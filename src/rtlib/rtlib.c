@@ -39,6 +39,19 @@ static void printAst(ast* expr) {
             printAst(binary->rhs);
             break;
         }
+        case AST_BLOCK: {
+            astBlock* block = (astBlock*)expr;
+            printf("{");
+            ast* curr = block->first;
+            while(curr != NULL) {
+                printAst(curr);
+                if(curr->next != NULL)
+                    printf("; ");
+                curr = curr->next;
+            }
+            printf("}");
+            break;
+        }
         case AST_QUOTE: {
             astQuote* quote = (astQuote*)expr;
             printf("`(");

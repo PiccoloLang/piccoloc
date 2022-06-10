@@ -161,6 +161,16 @@ static ast* parseParen(parser* prsr) {
     return res;
 }
 
+static ast* parseBlock(parser* prsr) {
+    advance(prsr);
+    astBlock* res = ALLOC_AST(prsr, Block, BLOCK);
+    res->first = parseExprList(prsr, TOKEN_RIGHT_BRACE);
+    if(!consume(prsr, TOKEN_RIGHT_BRACE)) {
+        error(prsr, "Expected }.");
+    }
+    return (ast*)res;
+}
+
 static ast* parseQuote(parser* prsr) {
     advance(prsr);
     astQuote* res = ALLOC_AST(prsr, Quote, QUOTE);
@@ -221,6 +231,8 @@ parseRule parseRules[] = {
     [TOKEN_LEFT_PAREN]  = {parseParen,   NULL,        PREC_NONE},
     [TOKEN_RIGHT_PAREN] = {NULL,         NULL,        PREC_NONE},
     [TOKEN_OPEN_QUOTE]  = {parseQuote,   NULL,        PREC_NONE},
+    [TOKEN_LEFT_BRACE]  = {parseBlock,   NULL,        PREC_NONE},
+    [TOKEN_RIGHT_BRACE] = {NULL,         NULL,        PREC_NONE},
     [TOKEN_GREATER]     = {NULL,         parseBinary, PREC_COMPARISON},
     [TOKEN_LESS]        = {NULL,         parseBinary, PREC_COMPARISON},
     [TOKEN_GREATER_EQ]  = {NULL,         parseBinary, PREC_COMPARISON},

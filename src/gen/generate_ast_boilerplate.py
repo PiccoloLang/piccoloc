@@ -33,6 +33,14 @@ ast_types = [
         ]
     },
     {
+        'name': 'Block',
+        'fields': [
+            ['ast*', 'first']
+        ],
+        'exclude_quote_gen': True,
+        'exclude_varfind_gen': True
+    },
+    {
         'name': 'Quote',
         'fields': [
             ['ast*', 'first']
@@ -58,6 +66,9 @@ ast_types = [
         'fields': [
             ['token', 'name'],
             ['ast*', 'expr']
+        ],
+        'non_quoted_fields': [
+            ['int', 'idx']
         ],
         'exclude_varfind_gen': True
     }
@@ -91,7 +102,7 @@ with open('src/ast.h', 'w') as f:
     for ast in ast_types:
         f.write('typedef struct {\n')
         f.write('\tast ast;\n')
-        for field in ast['fields']:
+        for field in ast['fields'] + (ast['non_quoted_fields'] if 'non_quoted_fields' in ast else []):
             f.write('\t' + field[0] + ' ' + field[1] + ';')
             if len(field) == 3:
                 f.write(' // ' + field[2])

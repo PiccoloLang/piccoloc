@@ -38,6 +38,16 @@ static void dumpAstWithOffset(ast* expr, int off) {
             dumpAstWithOffset(binary->rhs, off + 1);
             break;
         }
+        case AST_BLOCK: {
+            astBlock* block = (astBlock*)expr;
+            printf("block");
+            ast* curr = block->first;
+            while(curr != NULL) {
+                dumpAstWithOffset(curr, off + 1);
+                curr = curr->next;
+            }
+            break;
+        }
         case AST_QUOTE: {
             astQuote* quote = (astQuote*)expr;
             printf("quote\n");

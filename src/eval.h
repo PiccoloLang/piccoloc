@@ -14,6 +14,7 @@ val eval(engine* engine, ast* ast);
 val evalLiteral(engine* engine, astLiteral* literal);
 val evalUnary(engine* engine, astUnary* unary);
 val evalBinary(engine* engine, astBinary* binary);
+val evalBlock(engine* engine, astBlock* block);
 val evalQuote(engine* engine, astQuote* quote);
 val evalEval(engine* engine, astEval* eval);
 

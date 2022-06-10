@@ -7,6 +7,23 @@ static LLVMValueRef buildExprQuote(compiler* comp, ast* expr);
 
 #include "quote_gen.c"
 
+static LLVMValueRef buildQuotedBlock(compiler* comp, astBlock* block) {
+    int exprCnt = 0;
+    ast* curr = block->first;
+    while(curr != NULL) {
+        exprCnt++;
+        curr = curr->next;
+    }
+    LLVMValueRef args[exprCnt + 1];
+    args[0] = buildInt(comp, exprCnt);
+    curr = block->first;
+    for(int i = 1; i <= exprCnt; i++) {
+        args[i] = buildExprQuote(comp, curr);
+        curr = curr->next;
+    }
+    return buildCallFromArgArray(comp, comp->rtlib->makeQuotedBlock.type, comp->rtlib->makeQuotedBlock.func, exprCnt + 1, args);
+}
+
 static LLVMValueRef buildQuotedQuote(compiler* comp, astQuote* quote) {
     int exprCnt = 0;
     ast* curr = quote->first;
@@ -32,6 +49,8 @@ static LLVMValueRef buildExprQuote(compiler* comp, ast* expr) {
             return buildQuotedVar(comp, (astVar*)expr);
         case AST_UNARY:
             return buildQuotedUnary(comp, (astUnary*)expr);
+        case AST_BLOCK:
+            return buildQuotedBlock(comp, (astBlock*)expr);
         case AST_BINARY:
             return buildQuotedBinary(comp, (astBinary*)expr);
         case AST_QUOTE:

@@ -13,6 +13,7 @@ typedef struct {
     token name;
     LLVMValueRef alloc;
     int idx;
+    bool initialized;
 } variable;
 
 typedef struct {

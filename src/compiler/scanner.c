@@ -84,6 +84,8 @@ token scanToken(scanner* scnr) {
     SINGLE_CHAR('(', LEFT_PAREN)
     SINGLE_CHAR(')', RIGHT_PAREN)
     TWO_LONG_CHAR('`', '(', OPEN_QUOTE)
+    SINGLE_CHAR('{', LEFT_BRACE)
+    SINGLE_CHAR('}', RIGHT_BRACE)
     DOUBLE_CHAR('>', '=', GREATER, GREATER_EQ)
     DOUBLE_CHAR('<', '=', LESS, LESS_EQ)
     SINGLE_CHAR('!', BANG)

@@ -15,6 +15,8 @@ val eval(engine* engine, ast* ast) {
             return evalUnary(engine, (astUnary*)ast);
         case AST_BINARY:
             return evalBinary(engine, (astBinary*)ast);
+        case AST_BLOCK:
+            return evalBlock(engine, (astBlock*)ast);
         case AST_QUOTE:
             return evalQuote(engine, (astQuote*)ast);
         case AST_EVAL:
