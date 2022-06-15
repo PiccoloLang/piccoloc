@@ -4,11 +4,25 @@
 
 #include "value.h"
 #include "ast.h"
+#include "dynarr.h"
+
+typedef struct {
+    const char* nameStart;
+    int nameLen;
+    val* ptr;
+} rtVariable;
+
+struct engine;
+
+typedef void (*rtErrCallbackType)(struct engine* engine, const char* msg, token tkn, int argc, ...);
 
 typedef struct engine {
     const char* src;
-    void (*runtimeError)(struct engine* engine, const char* msg, token tkn, int argc, ...);
+    rtErrCallbackType runtimeError;
+    dynarr(rtVariable) vars; // Linear variable lookup is slow. Too bad!
 } engine;
+
+void initEngine(engine* engine, rtErrCallbackType runtimeError);
 
 val eval(engine* engine, ast* ast);
 val evalLiteral(engine* engine, astLiteral* literal);

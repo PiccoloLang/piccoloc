@@ -18,8 +18,5 @@ target_link_libraries(piccoloc ${llvm_libs})
 install(TARGETS piccoloc DESTINATION bin)
 
 project(piccrtlib)
-add_library(piccrtlib src/rtlib/rtlib.c src/package.c src/value.c src/quote.c src/obj.c src/rtlib/eval.c src/eval.c src/eval/literal.c src/eval/unary.c src/eval/binary.c src/eval/block.c src/eval/quote.c src/eval/eval.c src/ast.h)
+add_library(piccrtlib src/eval.c src/rtlib/rtlib.c src/package.c src/value.c src/quote.c src/obj.c src/rtlib/eval.c src/eval/literal.c src/eval/unary.c src/eval/binary.c src/eval/block.c src/eval/quote.c src/eval/eval.c src/ast.h)
 install(TARGETS piccrtlib DESTINATION ~/Library/Application\ Support/piccolo/rtlib)
-
-project(test)
-add_executable(test src/test/test.c src/obj.c src/quote.c src/rtlib/rtlib.c src/value.c)

@@ -41,6 +41,7 @@ case AST_VARDECL: {
 		expr->name.line,
 		expr->name.len,
 		expr->name.type,
-		makeQuote(engine, expr->expr)
+		makeQuote(engine, expr->expr),
+		expr->constant
 	);
 }

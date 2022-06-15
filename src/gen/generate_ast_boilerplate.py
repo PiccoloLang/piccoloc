@@ -65,7 +65,8 @@ ast_types = [
         'name': 'VarDecl',
         'fields': [
             ['token', 'name'],
-            ['ast*', 'expr']
+            ['ast*', 'expr'],
+            ['bool', 'constant']
         ],
         'non_quoted_fields': [
             ['int', 'idx']
@@ -114,7 +115,8 @@ with open('src/ast.h', 'w') as f:
 
 args_per_type = {
     'ast*': 1,
-    'token': 4
+    'token': 4,
+    'bool': 1
 }
 
 # compiler/builders/quote.c
@@ -145,6 +147,8 @@ with open('src/compiler/builders/quote_gen.c', 'w') as f:
                     f.write(',\n\t\tbuildInt(comp, ' + lower_name + '->' + name + '.line)')
                     f.write(',\n\t\tbuildInt(comp, ' + lower_name + '->' + name + '.len)')
                     f.write(',\n\t\tbuildInt(comp, ' + lower_name + '->' + name + '.type)')
+                if type == 'bool':
+                    f.write(',\n\t\tbuildBool(comp, ' + lower_name + '->' + name + ')')
 
             f.write('\n\t);\n')
 
@@ -156,7 +160,8 @@ with open('src/compiler/builders/quote_gen.c', 'w') as f:
 
 type_to_quote_param = {
     'ast*': ['val'],
-    'token': ['const char*', 'int', 'int', 'int']
+    'token': ['const char*', 'int', 'int', 'int'],
+    'bool': ['bool']
 }
 
 def make_quote_fn_signature(ast):
@@ -201,6 +206,8 @@ with open('src/quote_gen.c', 'w') as f:
                     f.write('\tquoteObj->' + name + '.line = ' + name + '1;\n')
                     f.write('\tquoteObj->' + name + '.len = ' + name + '2;\n')
                     f.write('\tquoteObj->' + name + '.type = ' + name + '3;\n')
+                elif type == 'bool':
+                    f.write('\tquoteObj->' + name + ' = ' + name + '0;\n')
                 f.write('\n')
 
             f.write('\treturn OBJ_VAL(quoteObj);\n')
@@ -232,6 +239,11 @@ with open('src/eval/quote_gen.c', 'w') as f:
                     f.write('\t\texpr->' + name + '.line,\n')
                     f.write('\t\texpr->' + name + '.len,\n')
                     f.write('\t\texpr->' + name + '.type')
+                elif type == 'bool':
+                    if put_comma:
+                        f.write(',\n')
+                    put_comma = True
+                    f.write('\t\texpr->' + name)
             f.write('\n\t);\n')
 
             f.write('}\n')

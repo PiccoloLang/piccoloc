@@ -10,6 +10,11 @@ LLVMValueRef buildInt(compiler* comp, int val) {
     return LLVMConstInt(LLVMInt32Type(), val, false);
 }
 
+LLVMValueRef buildBool(compiler* comp, bool val) {
+    (void)comp;
+    return LLVMConstInt(LLVMInt1Type(), val, false);
+}
+
 LLVMValueRef buildValue(compiler* comp, val val) {
     (void)comp;
     return LLVMConstInt(LLVMInt64Type(), val, false);

@@ -199,7 +199,7 @@ static ast* parseInquote(parser* prsr) {
 
 static ast* parseVarDecl(parser* prsr) {
     astVarDecl* res = ALLOC_AST(prsr, VarDecl, VARDECL);
-    // TODO: support const
+    res->constant = prsr->curr.type == TOKEN_CONST;
     advance(prsr);
 
     if(prsr->curr.type != TOKEN_IDEN) {
@@ -246,6 +246,7 @@ parseRule parseRules[] = {
     [TOKEN_AND]         = {NULL,         parseBinary, PREC_LOGIC},
     [TOKEN_OR]          = {NULL,         parseBinary, PREC_LOGIC},
     [TOKEN_VAR]         = {parseVarDecl, NULL,        PREC_NONE},
+    [TOKEN_CONST]       = {parseVarDecl, NULL,        PREC_NONE},
     [TOKEN_NUM]         = {parseLiteral, NULL,        PREC_NONE},
     [TOKEN_IDEN]        = {parseVar,     NULL,        PREC_NONE},
     [TOKEN_STRING]      = {parseLiteral, NULL,        PREC_NONE},

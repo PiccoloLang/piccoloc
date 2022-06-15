@@ -2,6 +2,11 @@
 #include "eval.h"
 #include <string.h>
 
+void initEngine(engine* engine, rtErrCallbackType runtimeError) {
+    engine->runtimeError = runtimeError;
+    initDynarr(&engine->vars);
+}
+
 val eval(engine* engine, ast* ast) {
     switch(ast->type) {
         case AST_LITERAL:

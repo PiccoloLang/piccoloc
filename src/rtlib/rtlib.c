@@ -10,6 +10,7 @@
 
 #include "rtlib.h"
 
+
 engine rtEngine;
 
 void printVal(val value);
@@ -79,7 +80,7 @@ static void printAst(ast* expr) {
         }
         case AST_VARDECL: {
             astVarDecl* varDecl = (astVarDecl*)expr;
-            printf("var %.*s = ", varDecl->name.len, varDecl->name.start); // TODO: add const here
+            printf("%s %.*s = ", varDecl->constant ? "const" : "var", varDecl->name.len, varDecl->name.start); // TODO: add const here
             printAst(varDecl->expr);
             break;
         }
@@ -144,7 +145,7 @@ void runtimeError(int lineNum, int offset, const char* line, const char* msg, in
     runtimeErrorUtil(lineNum, offset, line, msg, args);
 }
 
-void engineRuntimeErr(engine* engine, const char* msg, token tkn, int argc, ...) {
+void engineRuntimeErr(struct engine* engine, const char* msg, token tkn, int argc, ...) {
     va_list args;
     va_start(args, argc);
     const char* line = tkn.start;
@@ -152,12 +153,12 @@ void engineRuntimeErr(engine* engine, const char* msg, token tkn, int argc, ...)
         line--;
     if(*line == '\n')
         line++;
-    runtimeErrorUtil(tkn.line, tkn.start - engine->src - 1, line, msg, args);
+    runtimeErrorUtil(tkn.line, tkn.start - line, line, msg, args);
 }
 
 void initRTLib(const char* src) {
     rtEngine.src = src;
-    rtEngine.runtimeError = engineRuntimeErr;
+    initEngine(&rtEngine, engineRuntimeErr);
 }
 
 val makeString(const char* str) {

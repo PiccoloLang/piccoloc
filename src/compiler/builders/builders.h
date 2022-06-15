@@ -9,6 +9,7 @@
 #include "../../token.h"
 
 LLVMValueRef buildInt(compiler* comp, int val);
+LLVMValueRef buildBool(compiler* comp, bool val);
 LLVMValueRef buildValue(compiler* comp, val val);
 LLVMValueRef buildValToNum(compiler* comp, LLVMValueRef val);
 LLVMValueRef buildNumToVal(compiler* comp, LLVMValueRef val);

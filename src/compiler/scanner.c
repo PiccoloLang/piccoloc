@@ -123,6 +123,7 @@ token scanToken(scanner* scnr) {
         KEYWORD(and, AND)
         KEYWORD(or, OR)
         KEYWORD(var, VAR)
+        KEYWORD(const, CONST)
 
         return makeToken(scnr, TOKEN_IDEN);
     }
