@@ -45,7 +45,8 @@ ast_types = [
         'fields': [
             ['ast*', 'first']
         ],
-        'exclude_quote_gen': True
+        'exclude_quote_gen': True,
+        'exclude_varfind_gen': True
     },
     {
         'name': 'Eval',
@@ -85,6 +86,7 @@ with open('src/ast.h', 'w') as f:
     f.write('#include "value.h"\n')
     f.write('#include "obj.h"\n')
     f.write('#include <stdbool.h>\n')
+    f.write('#include <stdint.h>\n')
     f.write('\n')
 
     f.write('typedef enum {\n')
@@ -97,6 +99,7 @@ with open('src/ast.h', 'w') as f:
     f.write('\tastType type;\n')
     f.write('\tstruct ast* next;\n')
     f.write('\tstruct ast* nextToFree; // used to free nodes at compiletime\n')
+    f.write('\tuint64_t chrono; // a counter that always increases monotonically across all code paths \n')
     f.write('} ast;\n')
 
     f.write('\n')
@@ -264,3 +267,30 @@ with open('src/compiler/var_find_gen.c', 'w') as f:
                     f.write('\tfindVars(comp, ast->' + name + ');\n')
             f.write('\tbreak;\n')
             f.write('}\n')
+
+# compiler/chrono.c
+with open('src/compiler/chrono.c', 'w') as f:
+
+    f.write('\n')
+    f.write('#include "chrono.h"\n')
+    f.write('\n')
+    f.write('uint64_t assignChrono(ast* ast, uint64_t curr) {\n')
+    f.write('\tif(ast == NULL)\n')
+    f.write('\t\treturn curr;\n')
+    f.write('\tast->chrono = curr;\n')
+    f.write('\tcurr++;\n')
+    f.write('\n')
+    f.write('\tswitch(ast->type) {\n')
+
+    for ast in ast_types:
+        f.write('\t\tcase AST_' + ast['name'].upper() + ': {\n')
+        for field in ast['fields']:
+            if field[0] == 'ast*':
+                f.write('\t\t\tcurr = assignChrono(((ast' + ast['name'] + '*)ast)->' + field[1] + ', curr);\n')
+        f.write('\t\t\tbreak;\n')
+        f.write('\t\t}\n')
+    f.write('\t}\n')
+    f.write('\tcurr = assignChrono(ast->next, curr);\n')
+    f.write('\treturn curr;\n')
+    
+    f.write('}\n')

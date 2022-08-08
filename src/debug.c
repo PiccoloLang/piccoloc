@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 static void dumpAstWithOffset(ast* expr, int off) {
+    printf("%llu\t| ", expr->chrono);
     for(int i = 0; i < off; i++) {
         printf("\t");
     }
@@ -40,7 +41,7 @@ static void dumpAstWithOffset(ast* expr, int off) {
         }
         case AST_BLOCK: {
             astBlock* block = (astBlock*)expr;
-            printf("block");
+            printf("block\n");
             ast* curr = block->first;
             while(curr != NULL) {
                 dumpAstWithOffset(curr, off + 1);
@@ -73,6 +74,7 @@ static void dumpAstWithOffset(ast* expr, int off) {
         case AST_VARDECL: {
             astVarDecl* varDecl = (astVarDecl*)expr;
             printf("vardecl %.*s\n", varDecl->name.len, varDecl->name.start);
+            dumpAstWithOffset(varDecl->expr, off + 1);
             break;
         }
     }

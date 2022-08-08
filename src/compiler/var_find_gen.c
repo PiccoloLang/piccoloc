@@ -21,12 +21,6 @@ case AST_BINARY: {
 	findVars(comp, ast->rhs);
 	break;
 }
-case AST_QUOTE: {
-	astQuote* ast = (astQuote*)expr;
-	(void)ast;
-	findVars(comp, ast->first);
-	break;
-}
 case AST_EVAL: {
 	astEval* ast = (astEval*)expr;
 	(void)ast;

@@ -105,8 +105,16 @@ LLVMValueRef buildValAlloc(compiler* comp) {
     return LLVMBuildAlloca(comp->builder, LLVMInt64Type(), "");
 }
 
+LLVMValueRef buildPtrAlloc(compiler* comp) {
+    return LLVMBuildAlloca(comp->builder, LLVMPointerType(LLVMVoidType(), 0), "");
+}
+
 LLVMValueRef buildGetPtr(compiler* comp, LLVMValueRef ptr) {
     return LLVMBuildLoad2(comp->builder, LLVMInt64Type(), ptr, "");
+}
+
+LLVMValueRef buildGetPtrPtr(compiler* comp, LLVMValueRef ptr) {
+    return LLVMBuildLoad2(comp->builder, LLVMPointerType(LLVMVoidType(), 0), ptr, "");
 }
 
 LLVMValueRef buildSetPtr(compiler* comp, LLVMValueRef ptr, LLVMValueRef val) {
@@ -123,6 +131,11 @@ void compileToBlock(compiler* comp, LLVMBasicBlockRef block) {
 
 LLVMValueRef buildIsNilCheck(compiler* comp, LLVMValueRef val) {
     LLVMValueRef nil = LLVMBuildICmp(comp->builder, LLVMIntEQ, val, buildValue(comp, NIL_VAL()), "");
+    return nil;
+}
+
+LLVMValueRef buildIsUninitCheck(compiler* comp, LLVMValueRef val) {
+    LLVMValueRef nil = LLVMBuildICmp(comp->builder, LLVMIntEQ, val, buildValue(comp, UNINIT_VAL()), "");
     return nil;
 }
 

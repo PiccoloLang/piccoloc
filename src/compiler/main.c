@@ -10,12 +10,16 @@
 #include "../debug.h"
 #include "builders/builders.h"
 #include "var_find.h"
+#include "chrono.h"
 
 #include <stdio.h>
 
 #include <llvm-c/Core.h>
 #include <llvm-c/Analysis.h>
 #include <llvm-c/BitWriter.h>
+#include <llvm-c/Object.h>
+#include <llvm-c/Target.h>
+#include <llvm-c/TargetMachine.h>
 
 char* concat(const char* s1, const char* s2) {
     size_t l1 = strlen(s1);
@@ -91,9 +95,11 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
     findVars(&comp, curr);
 
     compileVarDecls(&comp, 0);
+    assignChrono(curr, 1);
 
     while(curr != NULL) {
         ast* ast = curr;
+        // dumpAst(curr);
         curr = curr->next;
         if(!prsr.hadError) {
             LLVMValueRef val = compile(&comp, ast);
@@ -102,6 +108,9 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
             prsr.hadError = false;
         }
     }
+
+    if(comp.hadError)
+        return -1;
 
     freeParser(&prsr);
     freeCompiler(&comp);
@@ -114,15 +123,33 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
     LLVMVerifyModule(mod, LLVMAbortProcessAction, &errMsg);
     LLVMDisposeMessage(errMsg);
 
-    char* bitcodeFilePath = concat(filePath, "module.bc");
-    remove(bitcodeFilePath);
-    LLVMWriteBitcodeToFile(mod, bitcodeFilePath);
-    free(bitcodeFilePath);
+    LLVMInitializeAllTargetInfos();
+    LLVMInitializeAllTargets();
+    LLVMInitializeAllTargetMCs();
+    LLVMInitializeAllAsmParsers();
+    LLVMInitializeAllAsmPrinters();
+
+    LLVMTargetRef target;
+    if(LLVMGetTargetFromTriple(LLVMGetDefaultTargetTriple(), &target, &errMsg)) {
+        printf("%s\n", errMsg);
+        return 0;
+    }
+    LLVMTargetMachineRef machine = LLVMCreateTargetMachine(target, LLVMGetDefaultTargetTriple(), "generic", LLVMGetHostCPUFeatures(), LLVMCodeGenLevelDefault, LLVMRelocDefault, LLVMCodeModelDefault);
+    LLVMSetTarget(mod, LLVMGetDefaultTargetTriple());
+    LLVMTargetDataRef datalayout = LLVMCreateTargetDataLayout(machine);
+    char* datalayout_str = LLVMCopyStringRepOfTargetData(datalayout);
+    LLVMSetDataLayout(mod, datalayout_str);
+    if(LLVMTargetMachineEmitToFile(machine, mod, "module.o", LLVMObjectFile, &errMsg)) {
+        printf("%s\n", errMsg);
+        return 0;
+    }
 
     remove("module");
-    char* command = multiconcat(5, "llvm-gcc ", shellFilePath, "module.bc ", shellFilePath, "rtlib/libpiccrtlib.a -o module");
+    char* command = multiconcat(3, "gcc module.o ", shellFilePath, "rtlib/libpiccrtlib.a -o module");
     system(command);
     free(command);
+    system("./module");
+    remove("module.o");
 
     free(filePath);
     free(shellFilePath);

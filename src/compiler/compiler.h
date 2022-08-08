@@ -13,7 +13,12 @@ typedef struct {
     token name;
     LLVMValueRef alloc;
     int idx;
-    bool initialized;
+    bool initialized; // variables are hoisted - this flag is used to give already initialized/declared variables priority
+
+    bool invalidated; // after an eval operation, all variables in the current scope are no longer guaranteed to be valid,
+                      // since they could have been replaced by a dynamic variable.
+    
+    uint64_t declChrono;
 } variable;
 
 typedef struct {
@@ -25,6 +30,11 @@ typedef struct {
     dynarr(variable) vars;
 
     rtlibFuncs* rtlib;
+    
+    bool hadError;
+
+    uint64_t prevEvalChrono;
+    int outerScopeVars; // the number of vars in scopes outside the current one
 } compiler;
 
 int findVar(compiler* comp, token tkn);
@@ -33,5 +43,6 @@ void initCompiler(compiler* comp, LLVMBuilderRef builder, LLVMValueRef func, pac
 void freeCompiler(compiler* comp);
 void compileVarDecls(compiler* comp, int firstIdx);
 LLVMValueRef compile(compiler* comp, ast* ast);
+void compilationError(compiler* comp, token tkn, const char* msg, ...);
 
 #endif

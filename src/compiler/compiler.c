@@ -4,13 +4,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "builders/builders.h"
 
+// Finds the index of a variable, or returns -1 if it isn't declared
 int findVar(compiler* comp, token tkn) {
     int bestUninitialized = -1;
     for(int i = comp->vars.cnt - 1; i >= 0; i--) {
         if(tkn.len == comp->vars.vals[i].name.len && memcmp(tkn.start, comp->vars.vals[i].name.start, tkn.len) == 0) {
+            if(comp->vars.vals[i].invalidated)
+                continue;
             if(comp->vars.vals[i].initialized)
                 return i;
             if(bestUninitialized == -1)
@@ -27,21 +31,29 @@ void initCompiler(compiler* comp, LLVMBuilderRef builder, LLVMValueRef func, pac
     comp->pkgSrcStr = LLVMBuildGlobalStringPtr(builder, pkg->src, "");
     initDynarr(&comp->vars);
     comp->rtlib = rtlib;
+    comp->hadError = false;
+    comp->prevEvalChrono = 0;
+    comp->outerScopeVars = 0;
 }
 
 void freeCompiler(compiler* comp) {
     freeDynarr(&comp->vars);
 }
 
-static void compilationError(compiler* comp, token tkn, const char* msg) {
-    (void)comp;
-    printf("Compilation error lol. Line %d. %s\n", tkn.len, msg);
+void compilationError(compiler* comp, token tkn, const char* msg, ...) {
+    va_list args;
+    va_start(args, msg);
+    char buff[512];
+    vsnprintf(buff, 512, msg, args);
+    va_end(args);
+    printf("Compilation error. Line %d. %s\n", tkn.line, buff);
+    comp->hadError = true;
 }
 
 void compileVarDecls(compiler* comp, int firstIdx) {
     for(int i = firstIdx; i < comp->vars.cnt; i++) {
         comp->vars.vals[i].alloc = buildValAlloc(comp);
-        buildSetPtr(comp, comp->vars.vals[i].alloc, buildValue(comp, NIL_VAL()));
+        buildSetPtr(comp, comp->vars.vals[i].alloc, buildValue(comp, UNINIT_VAL()));
     }
 }
 

@@ -36,12 +36,15 @@ typedef struct {
 buildChoiceRes buildChoice(compiler* comp, LLVMValueRef cond);
 
 LLVMValueRef buildValAlloc(compiler* comp);
+LLVMValueRef buildPtrAlloc(compiler* comp);
 LLVMValueRef buildGetPtr(compiler* comp, LLVMValueRef ptr);
+LLVMValueRef buildGetPtrPtr(compiler* comp, LLVMValueRef ptr);
 LLVMValueRef buildSetPtr(compiler* comp, LLVMValueRef ptr, LLVMValueRef val);
 
 void compileToBlock(compiler* comp, LLVMBasicBlockRef block);
 
 LLVMValueRef buildIsNilCheck(compiler* comp, LLVMValueRef val);
+LLVMValueRef buildIsUninitCheck(compiler* comp, LLVMValueRef val);
 LLVMValueRef buildIsNumCheck(compiler* comp, LLVMValueRef val);
 LLVMValueRef buildIsBoolCheck(compiler* comp, LLVMValueRef val);
 LLVMValueRef buildTruthy(compiler* comp, LLVMValueRef val);

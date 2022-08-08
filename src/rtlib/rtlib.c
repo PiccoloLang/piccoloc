@@ -125,7 +125,12 @@ static void runtimeErrorUtil(int lineNum, int offset, const char* line, const ch
         }
     }
     printf("\n");
-    printf("Line %d| %s\n", lineNum, line);
+
+    const char* temp = line;
+    while(*temp != '\n' && *temp != '\0')
+        temp++;
+
+    printf("Line %d| %.*s\n", lineNum, (int)(temp - line), line);
 
     int chars = 7;
     while(lineNum > 0) {
@@ -168,4 +173,30 @@ val makeString(const char* str) {
     memcpy(strObj->str, str, strObj->len);
     strObj->str[strObj->len] = '\0';
     return OBJ_VAL(strObj);
+}
+
+val evalRuntimeVariable(const char* name, int nameLen) {
+    rtVariable* curr = rtEngine.currVar;
+    while(curr != NULL) {
+        if(curr->nameLen == nameLen && strncmp(curr->nameStart, name, curr->nameLen) == 0)
+            break;
+        curr = curr->prevVar;
+    }
+    return curr->usePtr ? *curr->as.ptr : curr->as.val;
+}
+
+void* getCurrRtVar() {
+    return rtEngine.currVar;
+}
+
+void returnToRtVar(void* rtVar) {
+    returnToVar(&rtEngine, rtVar);
+}
+
+void addRtVar(const char* name, int nameLen, val* ptr) {
+    rtVariable* var = makeVariable(&rtEngine);
+    var->nameStart = name;
+    var->nameLen = nameLen;
+    var->usePtr = true;
+    var->as.ptr = ptr;
 }

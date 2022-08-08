@@ -215,7 +215,7 @@ static ast* parseVarDecl(parser* prsr) {
         advance(prsr);
     }
 
-    res->expr = parseWithPrec(prsr, PREC_ALL);
+    res->expr = parseWithPrec(prsr, PREC_NONE);
     return (ast*)res;
 }
 

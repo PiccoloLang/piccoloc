@@ -4,18 +4,15 @@
 
 void initEngine(engine* engine, rtErrCallbackType runtimeError) {
     engine->runtimeError = runtimeError;
-    initDynarr(&engine->vars);
+    engine->currVar = NULL;
 }
 
 val eval(engine* engine, ast* ast) {
     switch(ast->type) {
         case AST_LITERAL:
             return evalLiteral(engine, (astLiteral*)ast);
-        case AST_VAR: {
-            astVar* var = (astVar*)ast;
-            engine->runtimeError(engine, "Oops, evaluating variables at runtime is not implemented! x_x", var->name, 0);
-            return NIL_VAL();
-        }
+        case AST_VAR:
+            return evalVar(engine, (astVar*)ast);
         case AST_UNARY:
             return evalUnary(engine, (astUnary*)ast);
         case AST_BINARY:
@@ -31,11 +28,8 @@ val eval(engine* engine, ast* ast) {
             engine->runtimeError(engine, "Cannot inquote outside quote", inquote->op, 0);
             return NIL_VAL();
         }
-        case AST_VARDECL: {
-            astVarDecl* varDecl = (astVarDecl*)ast;
-            engine->runtimeError(engine, "Uh oh, eval'ing var decls not implemented!", varDecl->name, 0);
-            return NIL_VAL();
-        }
+        case AST_VARDECL:
+            return evalVarDecl(engine, (astVarDecl*)ast);
     }
 }
 
@@ -59,4 +53,30 @@ val add(val v1, val v2) {
         }
     }
     return NIL_VAL();
+}
+
+
+rtVariable* makeVariable(engine* engine) {
+    rtVariable* var = malloc(sizeof(rtVariable)); // TODO: PLEASE ADD GC AAAAAAAA
+    var->prevVar = engine->currVar;
+    engine->currVar = var;
+    return var;
+}
+
+rtVariable* findRtVar(engine* engine, token name) {
+    rtVariable* curr = engine->currVar;
+    while(curr != NULL) {
+        if(curr->nameLen == name.len && strncmp(curr->nameStart, name.start, curr->nameLen) == 0)
+            break;
+        curr = curr->prevVar;
+    }
+    return curr;
+}
+
+void returnToVar(engine* engine, rtVariable* var) {
+    while(engine->currVar != var) {
+        rtVariable* next = engine->currVar->prevVar;
+        free(engine->currVar);
+        engine->currVar = next;
+    }
 }

@@ -41,6 +41,10 @@ static inline double bitsToDouble(val v) {
 #define IS_BOOL(val) ((val | 1) == BOOL_VAL(true))
 #define AS_BOOL(val) ((val) == BOOL_VAL(true))
 
+#define TAG_UNINIT 4
+#define UNINIT_VAL() (QNAN | TAG_UNINIT)
+#define IS_UNINIT(val) ((val) == UNINIT_VAL()) 
+
 #define TAG_OBJ (QNAN | ((uint64_t)1 << 63))
 #define OBJ_VAL(val) (TAG_OBJ | (uint64_t)(intptr_t)(val))
 #define IS_OBJ(val) (((val) & TAG_OBJ) == TAG_OBJ)
