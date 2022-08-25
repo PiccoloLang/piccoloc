@@ -17,11 +17,14 @@ static LLVMTypeRef makeFuncType(LLVMTypeRef retType, bool vararg, int argCnt, ..
     return LLVMFunctionType(retType, argTypes, argCnt, vararg);
 }
 
-void initRTlib(rtlibFuncs* rtlib, LLVMModuleRef mod) {
+void initRTlib(rtlibFuncs* rtlib, LLVMModuleRef mod, types* t) {
 
     #define RTLIB_FUNC(name, retType, argCnt, vararg, ...) \
         rtlib->name.type = makeFuncType(retType, vararg, argCnt, __VA_ARGS__); \
         rtlib->name.func = LLVMAddFunction(mod, #name, rtlib->name.type);
+    
+    LLVMTypeRef argTypes[] = {LLVMInt32Type(), LLVMPointerType(LLVMInt64Type(), 0)};
+    LLVMTypeRef fnPtrType = LLVMPointerType(LLVMFunctionType(LLVMInt64Type(), argTypes, 2, false), 0);
 
     RTLIB_FUNC_X
 }

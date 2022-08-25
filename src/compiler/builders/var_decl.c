@@ -10,6 +10,6 @@ LLVMValueRef buildVarDecl(compiler* comp, astVarDecl* varDecl) {
     var->initialized = true;
     var->invalidated = false;
     LLVMValueRef expr = compile(comp, varDecl->expr);
-    buildSetPtr(comp, var->alloc, compile(comp, varDecl->expr));
+    buildSetPtr(comp, var->alloc, expr);
     return expr;
 }

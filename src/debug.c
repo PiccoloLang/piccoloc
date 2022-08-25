@@ -49,6 +49,19 @@ static void dumpAstWithOffset(ast* expr, int off) {
             }
             break;
         }
+        case AST_CALL: {
+            astCall* call = (astCall*)expr;
+            printf("call\n");
+            dumpAstWithOffset(call->fn, off + 1);
+
+            ast* args = call->args;
+            while(args != NULL) {
+                dumpAstWithOffset(args, off + 1);
+                args = args->next;
+            }
+
+            break;
+        }
         case AST_QUOTE: {
             astQuote* quote = (astQuote*)expr;
             printf("quote\n");
@@ -76,6 +89,19 @@ static void dumpAstWithOffset(ast* expr, int off) {
             printf("vardecl %.*s\n", varDecl->name.len, varDecl->name.start);
             dumpAstWithOffset(varDecl->expr, off + 1);
             break;
+        }
+        case AST_FN: {
+            astFn* fn = (astFn*)expr;
+            printf("fn ");
+            
+            astVar* args = (astVar*)fn->args;
+            while(args != NULL) {
+                printf("%.*s ", args->name.len, args->name.start);
+                args = (astVar*)args->ast.next;
+            }
+            printf("\n");
+
+            dumpAstWithOffset(fn->body, off + 1);
         }
     }
 }

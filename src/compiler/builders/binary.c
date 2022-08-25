@@ -91,16 +91,18 @@ static LLVMValueRef buildDiv(compiler* comp, astBinary* ast) {
 }
 
 LLVMValueRef buildAndOp(compiler* comp, astBinary* ast) {
-    BINARY_PREAMBLE
-    
+    LLVMValueRef lhs = compile(comp, ast->lhs);
+    LLVMBasicBlockRef endBlock = makeBlock(comp);
+    LLVMValueRef resultPtr = buildValAlloc(comp);
+
     buildChoiceRes truthyChoice = buildChoice(comp, buildTruthy(comp, lhs));
     
-    compileToBlock(comp, truthyChoice.trueCond);
-    buildSetPtr(comp, resultPtr, rhs);
-    buildJump(comp, endBlock);
-
     compileToBlock(comp, truthyChoice.falseCond);
     buildSetPtr(comp, resultPtr, lhs);
+    buildJump(comp, endBlock);
+
+    compileToBlock(comp, truthyChoice.trueCond);
+    buildSetPtr(comp, resultPtr, compile(comp, ast->rhs));
     buildJump(comp, endBlock);
 
     compileToBlock(comp, endBlock);
@@ -108,8 +110,10 @@ LLVMValueRef buildAndOp(compiler* comp, astBinary* ast) {
 }
 
 LLVMValueRef buildOrOp(compiler* comp, astBinary* ast) {
-    BINARY_PREAMBLE
-    
+    LLVMValueRef lhs = compile(comp, ast->lhs);
+    LLVMBasicBlockRef endBlock = makeBlock(comp);
+    LLVMValueRef resultPtr = buildValAlloc(comp);
+
     buildChoiceRes truthyChoice = buildChoice(comp, buildTruthy(comp, lhs));
     
     compileToBlock(comp, truthyChoice.trueCond);
@@ -117,11 +121,19 @@ LLVMValueRef buildOrOp(compiler* comp, astBinary* ast) {
     buildJump(comp, endBlock);
 
     compileToBlock(comp, truthyChoice.falseCond);
-    buildSetPtr(comp, resultPtr, rhs);
+    buildSetPtr(comp, resultPtr, compile(comp, ast->rhs));
     buildJump(comp, endBlock);
 
     compileToBlock(comp, endBlock);
     return buildGetPtr(comp, resultPtr);
+}
+
+LLVMValueRef buildEquality(compiler* comp, astBinary* ast) {
+    BINARY_PREAMBLE
+    (void)resultPtr;
+    buildJump(comp, endBlock);
+    compileToBlock(comp, endBlock);
+    return buildBoolToVal(comp, buildIntEq(comp, lhs, rhs)); // TODO: make this account for objects and stuff
 }
 
 LLVMValueRef buildComparison(compiler* comp, astBinary* ast) {
@@ -162,6 +174,8 @@ LLVMValueRef buildBinary(compiler* comp, astBinary* ast) {
             return buildAndOp(comp, ast);
         case TOKEN_OR:
             return buildOrOp(comp, ast);
+        case TOKEN_EQ_EQ:
+            return buildEquality(comp, ast);
         case TOKEN_GREATER:
         case TOKEN_LESS:
         case TOKEN_GREATER_EQ:

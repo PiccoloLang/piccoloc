@@ -3,20 +3,17 @@
 #define OBJ_H
 
 #include <stdlib.h>
+#include "value.h"
 
-typedef enum {
-    OBJ_STR, OBJ_QUOTE
-} objType;
+#include "obj_enum_gen.h"
 
 typedef struct {
     objType type;
 } obj;
 
-typedef struct {
-    obj obj;
-    int len;
-    char* str;
-} objStr;
+typedef val (*fnType)(val* args);
+
+#include "obj_gen.h"
 
 obj* allocObj(size_t size, objType type);
 

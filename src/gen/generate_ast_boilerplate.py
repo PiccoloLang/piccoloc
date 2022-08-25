@@ -38,7 +38,17 @@ ast_types = [
             ['ast*', 'first']
         ],
         'exclude_quote_gen': True,
-        'exclude_varfind_gen': True
+        'exclude_varfind_gen': True,
+        'exclude_analysis': True
+    },
+    {
+        'name': 'Call',
+        'fields': [
+            ['ast*', 'fn'],
+            ['token', 'tkn'],
+            ['ast*', 'args']
+        ],
+        'exclude_quote_gen': True
     },
     {
         'name': 'Quote',
@@ -52,7 +62,8 @@ ast_types = [
         'name': 'Eval',
         'fields': [
             ['ast*', 'expr']
-        ]
+        ],
+        'exclude_analysis': True
     },
     {
         'name': 'Inquote',
@@ -73,6 +84,14 @@ ast_types = [
             ['int', 'idx']
         ],
         'exclude_varfind_gen': True
+    },
+    {
+        'name': 'Fn',
+        'fields': [
+            ['ast*', 'body'],
+            ['ast*', 'args']
+        ],
+        'exclude_quote_gen': True 
     }
 ]
 
@@ -99,7 +118,8 @@ with open('src/ast.h', 'w') as f:
     f.write('\tastType type;\n')
     f.write('\tstruct ast* next;\n')
     f.write('\tstruct ast* nextToFree; // used to free nodes at compiletime\n')
-    f.write('\tuint64_t chrono; // a counter that always increases monotonically across all code paths \n')
+    f.write('\tuint64_t chrono; // a counter that always increases monotonically across all code paths\n')
+    f.write('\tbool containsEval; // keep track of if a ast subnode is an eval node. needed for proper dynvar impl\n')
     f.write('} ast;\n')
 
     f.write('\n')
@@ -294,3 +314,15 @@ with open('src/compiler/chrono.c', 'w') as f:
     f.write('\treturn curr;\n')
     
     f.write('}\n')
+
+# compiler/analysis_gen.c
+with open('src/compiler/analysis_gen.c', 'w') as f:
+
+    for ast in ast_types:
+        if not 'exclude_analysis' in ast:
+            f.write('\t\tcase AST_' + ast['name'].upper() + ': {\n')
+            for field in ast['fields']:
+                if field[0] == 'ast*':
+                    f.write('\t\tanalyze(((ast' + ast['name'] + '*)expr)->' + field[1] + ');\n')
+            f.write('\t\t\tbreak;\n')
+            f.write('\t\t}\n')

@@ -24,16 +24,20 @@ int findVar(compiler* comp, token tkn) {
     return bestUninitialized;
 }
 
-void initCompiler(compiler* comp, LLVMBuilderRef builder, LLVMValueRef func, package* pkg, rtlibFuncs* rtlib) {
+void initCompiler(compiler* comp, LLVMModuleRef mod, LLVMBuilderRef builder, LLVMValueRef func, package* pkg, rtlibFuncs* rtlib, types* types) {
+    comp->mod = mod;
     comp->builder = builder;
     comp->func = func;
     comp->pkg = pkg;
     comp->pkgSrcStr = LLVMBuildGlobalStringPtr(builder, pkg->src, "");
     initDynarr(&comp->vars);
-    comp->rtlib = rtlib;
     comp->hadError = false;
     comp->prevEvalChrono = 0;
     comp->outerScopeVars = 0;
+
+    comp->rtlib = rtlib;
+    comp->types = types;
+
 }
 
 void freeCompiler(compiler* comp) {
@@ -72,6 +76,8 @@ LLVMValueRef compile(compiler* comp, ast* ast) {
             return buildBinary(comp, (astBinary*)ast);
         case AST_BLOCK:
             return buildBlock(comp, (astBlock*)ast);
+        case AST_CALL: 
+            return buildCallExpr(comp, (astCall*)ast);
         case AST_QUOTE:
             return buildQuote(comp, (astQuote*)ast);
         case AST_EVAL:
@@ -83,5 +89,21 @@ LLVMValueRef compile(compiler* comp, ast* ast) {
         }
         case AST_VARDECL:
             return buildVarDecl(comp, (astVarDecl*)ast);
+        case AST_FN: 
+            return buildFn(comp, (astFn*)ast);
     }
+}
+
+void insertDynvarConversion(compiler* comp, ast* expr) {
+    (void)expr;
+    for(int i = 0; i < comp->vars.cnt; i++) {
+        if(comp->vars.vals[i].declChrono < comp->prevEvalChrono || !comp->vars.vals[i].initialized)
+            continue;
+        variable* var = comp->vars.vals + i;
+        buildCall(comp, comp->rtlib->addRtVar.type, comp->rtlib->addRtVar.func, 3, buildStrOffset(comp, comp->pkgSrcStr, buildInt(comp, var->name.start - comp->pkg->src)), buildInt(comp, var->name.len), var->alloc);
+    }
+
+    for(int i = 0; i < comp->vars.cnt; i++)
+        comp->vars.vals[i].invalidated = true;
+
 }

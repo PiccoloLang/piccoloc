@@ -7,6 +7,7 @@
 #include "../package.h"
 #include "../ast.h"
 #include "rtlib.h"
+#include "types.h"
 #include "../dynarr.h"
 
 typedef struct {
@@ -22,6 +23,7 @@ typedef struct {
 } variable;
 
 typedef struct {
+    LLVMModuleRef mod;
     LLVMBuilderRef builder;
     LLVMValueRef func;
     package* pkg;
@@ -30,7 +32,8 @@ typedef struct {
     dynarr(variable) vars;
 
     rtlibFuncs* rtlib;
-    
+    types* types;
+
     bool hadError;
 
     uint64_t prevEvalChrono;
@@ -39,10 +42,11 @@ typedef struct {
 
 int findVar(compiler* comp, token tkn);
 
-void initCompiler(compiler* comp, LLVMBuilderRef builder, LLVMValueRef func, package* pkg, rtlibFuncs* rtlib);
+void initCompiler(compiler* comp, LLVMModuleRef mod, LLVMBuilderRef builder, LLVMValueRef func, package* pkg, rtlibFuncs* rtlib, types* types);
 void freeCompiler(compiler* comp);
 void compileVarDecls(compiler* comp, int firstIdx);
 LLVMValueRef compile(compiler* comp, ast* ast);
 void compilationError(compiler* comp, token tkn, const char* msg, ...);
+void insertDynvarConversion(compiler* comp, ast* expr);
 
 #endif

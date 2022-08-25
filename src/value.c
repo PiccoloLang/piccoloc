@@ -5,6 +5,10 @@
 static char* getObjTypename(obj* obj) {
     if(obj->type == OBJ_STR)
         return "string";
+    if(obj->type == OBJ_FN || obj->type == OBJ_RTFN)
+        return "fn";
+    if(obj->type == OBJ_QUOTE)
+        return "quote";
     return "";
 }
 

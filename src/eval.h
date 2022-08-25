@@ -36,9 +36,11 @@ val evalVar(engine* engine, astVar* var);
 val evalUnary(engine* engine, astUnary* unary);
 val evalBinary(engine* engine, astBinary* binary);
 val evalBlock(engine* engine, astBlock* block);
+val evalCall(engine* engine, astCall* call);
 val evalQuote(engine* engine, astQuote* quote);
 val evalEval(engine* engine, astEval* eval);
 val evalVarDecl(engine* engine, astVarDecl* varDecl);
+val evalFn(engine* engine, astFn* fn);
 
 bool isTruthy(val v);
 val add(val v1, val v2);

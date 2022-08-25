@@ -1,8 +1,18 @@
 build/
 .vscode/
 
+# auto generated files
 src/ast.h
 src/quote_gen.h
 src/quote_gen.c
 src/compiler/builders/quote_gen.c
+src/compiler/builders/obj_builders_gen.h
+src/compiler/builders/obj_builders_gen.c
+src/compiler/analysis_gen.c
+src/compiler/types_obj_gen.h
+src/compiler/types_obj_gen.c
+src/compiler/var_find_gen.c
+src/eval/quote_gen.c
 src/compiler/chrono.c
+src/obj_gen.h
+src/obj_enum_gen.h

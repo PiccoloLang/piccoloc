@@ -11,6 +11,7 @@ typedef enum {
     PREC_COMPARISON,
     PREC_ADD,
     PREC_MUL,
+    PREC_CALL,
     PREC_ALL
 } precedence;
 
@@ -84,11 +85,12 @@ static ast* allocAst(parser* prsr, astType type, size_t size) {
 #define ALLOC_AST(prsr, type, typeEnum) (ast ## type*)(allocAst(prsr, AST_ ## typeEnum, sizeof(ast ## type)))
 
 
-
 ast* parseExprList(parser* prsr, tokenType closingToken) {
     ast* first = NULL;
     ast* curr = NULL;
-    while(prsr->curr.type != closingToken) {
+    while(prsr->curr.type == TOKEN_NL)
+        advance(prsr);
+    while(prsr->curr.type != closingToken && prsr->curr.type != TOKEN_EOF) {
         ast* ast = parse(prsr);
         if(curr == NULL) {
             curr = ast;
@@ -171,6 +173,38 @@ static ast* parseBlock(parser* prsr) {
     return (ast*)res;
 }
 
+static ast* parseCall(parser* prsr, ast* lhs) {
+    astCall* call = ALLOC_AST(prsr, Call, CALL);
+    call->fn = lhs;
+
+    call->tkn = prsr->curr;
+    advance(prsr);
+
+    ast* currArg = NULL;
+    while(prsr->curr.type == TOKEN_NL)
+        advance(prsr);
+    while(prsr->curr.type != TOKEN_RIGHT_PAREN) {
+        ast* arg = parse(prsr);
+
+        if(!consume(prsr, TOKEN_COMMA) && prsr->curr.type != TOKEN_RIGHT_PAREN) {
+            error(prsr, "Expected comma.");
+        }
+
+        if(currArg == NULL) {
+            call->args = (ast*)arg;
+        } else {
+            currArg->next = (ast*)arg;
+        }
+        currArg = arg;
+    }
+    
+    if(!consume(prsr, TOKEN_RIGHT_PAREN)) {
+        error(prsr, "Expected ).");
+    }
+
+    return (ast*)call;
+}
+
 static ast* parseQuote(parser* prsr) {
     advance(prsr);
     astQuote* res = ALLOC_AST(prsr, Quote, QUOTE);
@@ -219,6 +253,40 @@ static ast* parseVarDecl(parser* prsr) {
     return (ast*)res;
 }
 
+static ast* parseFn(parser* prsr) {
+    astFn* res = ALLOC_AST(prsr, Fn, FN);
+
+    advance(prsr);
+
+    ast* currArg = NULL;
+    while(prsr->curr.type == TOKEN_NL)
+        advance(prsr);
+    while(prsr->curr.type == TOKEN_IDEN) {
+        astVar* arg = ALLOC_AST(prsr, Var, VAR);
+        arg->name = prsr->curr;
+
+        advance(prsr);
+        
+        if(!consume(prsr, TOKEN_COMMA) && prsr->curr.type != TOKEN_ARROW) {
+            error(prsr, "Expected comma.");
+        }
+
+        if(currArg == NULL) {
+            res->args = (ast*)arg;
+        } else {
+            currArg->next = (ast*)arg;
+        }
+        currArg = (ast*)arg;
+    }
+
+    if(!consume(prsr, TOKEN_ARROW)) {
+        error(prsr, "Expected ->.");
+    }
+
+    res->body = parseWithPrec(prsr, PREC_NONE);
+    return (ast*)res;
+}
+
 ast* parse(parser* prsr) {
     return parseWithPrec(prsr, PREC_NONE);
 }
@@ -228,15 +296,17 @@ parseRule parseRules[] = {
     [TOKEN_MINUS]       = {parseUnary,   parseBinary, PREC_ADD},
     [TOKEN_STAR]        = {parseEval,    parseBinary, PREC_MUL},
     [TOKEN_SLASH]       = {NULL,         parseBinary, PREC_MUL},
-    [TOKEN_LEFT_PAREN]  = {parseParen,   NULL,        PREC_NONE},
+    [TOKEN_LEFT_PAREN]  = {parseParen,   parseCall,   PREC_CALL},
     [TOKEN_RIGHT_PAREN] = {NULL,         NULL,        PREC_NONE},
     [TOKEN_OPEN_QUOTE]  = {parseQuote,   NULL,        PREC_NONE},
     [TOKEN_LEFT_BRACE]  = {parseBlock,   NULL,        PREC_NONE},
     [TOKEN_RIGHT_BRACE] = {NULL,         NULL,        PREC_NONE},
+    [TOKEN_EQ_EQ]       = {NULL,         parseBinary, PREC_EQUALITY},
     [TOKEN_GREATER]     = {NULL,         parseBinary, PREC_COMPARISON},
     [TOKEN_LESS]        = {NULL,         parseBinary, PREC_COMPARISON},
     [TOKEN_GREATER_EQ]  = {NULL,         parseBinary, PREC_COMPARISON},
     [TOKEN_LESS_EQ]     = {NULL,         parseBinary, PREC_COMPARISON},
+    [TOKEN_ARROW]       = {NULL,         NULL,        PREC_NONE},
     [TOKEN_BANG]        = {parseUnary,   NULL,        PREC_NONE},
     [TOKEN_EQ]          = {NULL,         NULL,        PREC_NONE},
     [TOKEN_COMMA]       = {parseInquote, NULL,        PREC_NONE},
@@ -247,6 +317,7 @@ parseRule parseRules[] = {
     [TOKEN_OR]          = {NULL,         parseBinary, PREC_LOGIC},
     [TOKEN_VAR]         = {parseVarDecl, NULL,        PREC_NONE},
     [TOKEN_CONST]       = {parseVarDecl, NULL,        PREC_NONE},
+    [TOKEN_FN]          = {parseFn,      NULL,        PREC_NONE},
     [TOKEN_NUM]         = {parseLiteral, NULL,        PREC_NONE},
     [TOKEN_IDEN]        = {parseVar,     NULL,        PREC_NONE},
     [TOKEN_STRING]      = {parseLiteral, NULL,        PREC_NONE},

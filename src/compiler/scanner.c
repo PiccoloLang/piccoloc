@@ -78,7 +78,7 @@ token scanToken(scanner* scnr) {
         DOUBLE_CHAR(c1, c2, ERR, token)
 
     SINGLE_CHAR('+', PLUS)
-    SINGLE_CHAR('-', MINUS)
+    DOUBLE_CHAR('-', '>', MINUS, ARROW)
     SINGLE_CHAR('*', STAR)
     SINGLE_CHAR('/', SLASH)
     SINGLE_CHAR('(', LEFT_PAREN)
@@ -89,7 +89,7 @@ token scanToken(scanner* scnr) {
     DOUBLE_CHAR('>', '=', GREATER, GREATER_EQ)
     DOUBLE_CHAR('<', '=', LESS, LESS_EQ)
     SINGLE_CHAR('!', BANG)
-    SINGLE_CHAR('=', EQ)
+    DOUBLE_CHAR('=', '=', EQ, EQ_EQ)
     SINGLE_CHAR(',', COMMA)
 
     if(startChar == '\'') {
@@ -124,6 +124,7 @@ token scanToken(scanner* scnr) {
         KEYWORD(or, OR)
         KEYWORD(var, VAR)
         KEYWORD(const, CONST)
+        KEYWORD(fn, FN)
 
         return makeToken(scnr, TOKEN_IDEN);
     }

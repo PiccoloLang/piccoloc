@@ -36,6 +36,32 @@ LLVMValueRef buildBoolToVal(compiler* comp, LLVMValueRef val) {
                 buildValue(comp, BOOL_VAL(false)), "");
 }
 
+LLVMValueRef buildPtrToVal(compiler* comp, LLVMValueRef ptr) {
+    return LLVMBuildOr(comp->builder,
+        LLVMBuildPtrToInt(comp->builder, ptr, comp->types->valType, ""),
+        buildValue(comp, TAG_OBJ), "");
+}
+
+LLVMValueRef buildValToPtr(compiler* comp, LLVMValueRef val) {
+    return LLVMBuildIntToPtr(comp->builder, LLVMBuildAnd(comp->builder, buildValue(comp, ~TAG_OBJ), val, ""), comp->types->objPtrType, "");
+}
+
+
+
+LLVMValueRef buildIntEq(compiler* comp, LLVMValueRef a, LLVMValueRef b) {
+    return LLVMBuildICmp(comp->builder, LLVMIntEQ, a, b, "");
+}
+
+
+
+LLVMValueRef buildDeref(compiler* comp, LLVMValueRef ptr) {
+    return LLVMBuildLoad2(comp->builder, LLVMGetElementType(LLVMTypeOf(ptr)), ptr, "");
+}
+
+void buildStore(compiler* comp, LLVMValueRef ptr, LLVMValueRef val) {
+    LLVMBuildStore(comp->builder, val, ptr);
+}
+
 
 
 LLVMValueRef buildNumAdd(compiler* comp, LLVMValueRef a, LLVMValueRef b) {
@@ -61,6 +87,10 @@ LLVMValueRef buildNumCmp(compiler* comp, LLVMValueRef a, LLVMValueRef b) {
 LLVMValueRef buildDouble(compiler* comp, double val) {
     (void)comp;
     return LLVMConstReal(LLVMDoubleType(), val);
+}
+
+LLVMValueRef buildPtrOffset(compiler* comp, LLVMValueRef ptr, LLVMValueRef offset) {
+    return LLVMBuildIntToPtr(comp->builder, LLVMBuildAdd(comp->builder, LLVMBuildPtrToInt(comp->builder, ptr, LLVMInt64Type(), ""), offset, ""), LLVMInt64Type(), "");
 }
 
 
@@ -103,6 +133,10 @@ buildChoiceRes buildChoice(compiler* comp, LLVMValueRef cond) {
 
 LLVMValueRef buildValAlloc(compiler* comp) {
     return LLVMBuildAlloca(comp->builder, LLVMInt64Type(), "");
+}
+
+LLVMValueRef buildValArrAlloc(compiler* comp, LLVMValueRef cnt) {
+    return LLVMBuildArrayAlloca(comp->builder, LLVMInt64Type(), cnt, "");
 }
 
 LLVMValueRef buildPtrAlloc(compiler* comp) {
@@ -149,6 +183,11 @@ LLVMValueRef buildIsBoolCheck(compiler* comp, LLVMValueRef val) {
     LLVMValueRef bitwiseOrResult = LLVMBuildOr(comp->builder, val, buildValue(comp, 1), ""); // val | 1
     LLVMValueRef result = LLVMBuildICmp(comp->builder, LLVMIntEQ, bitwiseOrResult, buildValue(comp, BOOL_VAL(true)), ""); // (val | 1) == BOOL_VAL(true)
     return result;
+}
+
+LLVMValueRef buildIsObjCheck(compiler* comp, LLVMValueRef val) {
+    LLVMValueRef bitwiseAndResult = LLVMBuildAnd(comp->builder, val, buildValue(comp, TAG_OBJ), ""); // val & TAG_OBJ
+    return LLVMBuildICmp(comp->builder, LLVMIntEQ, bitwiseAndResult, buildValue(comp, TAG_OBJ), ""); // (val & TAG_OBJ) == TAG_OBJ
 }
 
 LLVMValueRef buildTruthy(compiler* comp, LLVMValueRef val) {

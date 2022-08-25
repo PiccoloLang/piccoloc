@@ -53,6 +53,20 @@ static void printAst(ast* expr) {
             printf("}");
             break;
         }
+        case AST_CALL: {
+            astCall* call = (astCall*)expr;
+            printAst(call->fn);
+            printf("(");
+            ast* currArg = call->args;
+            while(currArg != NULL) {
+                printAst(currArg);
+                if(currArg->next != NULL)
+                    printf(", ");
+                currArg = currArg->next;
+            }
+            printf(")");
+            break;
+        }
         case AST_QUOTE: {
             astQuote* quote = (astQuote*)expr;
             printf("`(");
@@ -84,6 +98,18 @@ static void printAst(ast* expr) {
             printAst(varDecl->expr);
             break;
         }
+        case AST_FN: {
+            astFn* fn = (astFn*)expr;
+            printf("fn ");
+            for(ast* currArg = fn->args; currArg != NULL; currArg = currArg->next) {
+                printAst(currArg);
+                if(currArg->next != NULL)
+                    printf(", ");
+            }
+            printf(" -> ");
+            printAst(fn->body);
+            break;
+        }
     }
 }
 
@@ -95,6 +121,10 @@ static void printObj(obj* obj) {
         printf("`(");
         printAst((ast*)obj);
         printf(")");
+    } else if(obj->type == OBJ_FN) {
+        printf("<fn>");
+    } else if(obj->type == OBJ_RTFN) {
+        printf("<fn>");
     }
 }
 
@@ -120,6 +150,9 @@ static void runtimeErrorUtil(int lineNum, int offset, const char* line, const ch
         if(*c == '@') {
             val v = va_arg(args, val);
             printf("%s", getTypename(v));
+        } else if(*c == '#') {
+            int v = va_arg(args, int);
+            printf("%d", v);
         } else {
             printf("%c", *c);
         }
@@ -175,14 +208,20 @@ val makeString(const char* str) {
     return OBJ_VAL(strObj);
 }
 
+val makeFn(val (*fn)(val*)) {
+    objFn* fnObj = ALLOC_OBJ(Fn, FN);
+    fnObj->fn = fn;
+    return OBJ_VAL(fnObj);
+}
+
 val evalRuntimeVariable(const char* name, int nameLen) {
     rtVariable* curr = rtEngine.currVar;
     while(curr != NULL) {
         if(curr->nameLen == nameLen && strncmp(curr->nameStart, name, curr->nameLen) == 0)
-            break;
+            return curr->usePtr ? *curr->as.ptr : curr->as.val;
         curr = curr->prevVar;
     }
-    return curr->usePtr ? *curr->as.ptr : curr->as.val;
+    return UNINIT_VAL();
 }
 
 void* getCurrRtVar() {
@@ -200,3 +239,28 @@ void addRtVar(const char* name, int nameLen, val* ptr) {
     var->usePtr = true;
     var->as.ptr = ptr;
 }
+
+void setCurrRtVar(rtVariable* var) {
+    rtEngine.currVar = var;
+}
+
+obj* allocateObj(int type, int size) {
+    return allocObj(size, type); 
+} 
+
+val callRtFn(objRtFn* fn, val* args) {
+
+    rtVariable* prevRtVar = rtEngine.currVar;
+    rtEngine.currVar = NULL;
+
+    astFn* fnAst = (astFn*)fn->fnAst;
+    astVar* currArg = (astVar*)fnAst->args;
+    for(int i = 0; i < fn->arity; i++) {
+        addRtVar(currArg->name.start, currArg->name.len, args + i); 
+    }
+    val retVal = eval(&rtEngine, fnAst->body);
+    
+    rtEngine.currVar = prevRtVar;
+
+    return retVal; 
+} 

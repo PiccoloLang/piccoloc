@@ -1,18 +1,6 @@
 
-var a = 1
-*`(var a = 5)
-a
-*`(var a = 999)
-a
-var a = 42
-a
-{
-    *`(var a = 52)
-    a
-}
-{
-    var a = 93
-    a
-}
-a
-
+const sqr = fn x -> x * x
+sqr(5)
+*`(sqr(5))
+const rtSqr = *`(fn x -> x * x)
+rtSqr(5)

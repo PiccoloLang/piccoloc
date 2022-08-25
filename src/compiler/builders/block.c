@@ -21,7 +21,9 @@ LLVMValueRef buildBlock(compiler* comp, astBlock* block) {
 
     LLVMValueRef result = buildValue(comp, NIL_VAL());
     ast* curr = block->first;
-    while(curr != NULL) {
+    while(curr != NULL) { 
+        if(curr->containsEval)
+            insertDynvarConversion(comp, curr);
         result = compile(comp, curr);
         curr = curr->next;
     }

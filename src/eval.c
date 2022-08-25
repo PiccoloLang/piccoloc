@@ -19,17 +19,21 @@ val eval(engine* engine, ast* ast) {
             return evalBinary(engine, (astBinary*)ast);
         case AST_BLOCK:
             return evalBlock(engine, (astBlock*)ast);
+        case AST_CALL: 
+            return evalCall(engine, (astCall*)ast);
         case AST_QUOTE:
             return evalQuote(engine, (astQuote*)ast);
         case AST_EVAL:
             return evalEval(engine, (astEval*)ast);
         case AST_INQUOTE: {
             astInquote* inquote = (astInquote*)ast;
-            engine->runtimeError(engine, "Cannot inquote outside quote", inquote->op, 0);
+            engine->runtimeError(engine, "Cannot inquote outside quote.", inquote->op, 0);
             return NIL_VAL();
         }
         case AST_VARDECL:
             return evalVarDecl(engine, (astVarDecl*)ast);
+        case AST_FN: 
+            return evalFn(engine, (astFn*)ast);
     }
 }
 
@@ -74,9 +78,5 @@ rtVariable* findRtVar(engine* engine, token name) {
 }
 
 void returnToVar(engine* engine, rtVariable* var) {
-    while(engine->currVar != var) {
-        rtVariable* next = engine->currVar->prevVar;
-        free(engine->currVar);
-        engine->currVar = next;
-    }
+    engine->currVar = var;
 }

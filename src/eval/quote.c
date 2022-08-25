@@ -1,6 +1,7 @@
 
 #include "../eval.h"
 #include "../quote.h"
+#include "../ast_util.h"
 
 #include <stdlib.h>
 
@@ -23,6 +24,40 @@ static val makeBlockQuote(engine* engine, ast* expr) {
     return makeQuotedBlockFromArr(exprCnt, elems);
 }
 
+static val makeCallQuote(engine* engine, ast* expr) {
+    astCall* call = (astCall*)expr;
+
+    int argCnt = 0;
+    ast* curr = call->args;
+    while(curr != NULL) {
+        argCnt++;
+        curr = curr->next;
+    }
+
+    val args[argCnt];
+    curr = call->args;
+    for(int i = 0; i < argCnt; i++) {
+        args[i] = makeQuote(engine, curr);
+        curr = curr->next;
+    }
+
+    return makeQuotedCallFromArr(makeQuote(engine, call->fn), call->tkn.start, call->tkn.line, call->tkn.len, call->tkn.type, argCnt, args);
+}
+
+static val makeFnQuote(engine* engine, ast* expr) {
+    astFn* fn = (astFn*)expr;
+
+    int argCnt = astNextChainLen(fn->args);
+    val args[argCnt];
+    ast* curr = fn->args;
+    for(int i = 0; i < argCnt; i++) {
+        args[i] = makeQuote(engine, curr);
+        curr = curr->next;
+    } 
+    
+    return makeQuotedFnFromArr(makeQuote(engine, fn->body), argCnt, args);
+}
+
 static val makeQuote(engine* engine, ast* ast) {
     switch(ast->type) {
         case AST_LITERAL: {
@@ -34,6 +69,9 @@ static val makeQuote(engine* engine, ast* ast) {
         case AST_BLOCK: {
             return makeBlockQuote(engine, ast);
         }
+        case AST_CALL: {
+            return makeCallQuote(engine, ast);
+        }
         case AST_QUOTE: {
             astQuote* quote = (astQuote*)ast;
             return OBJ_VAL(quote);
@@ -41,6 +79,9 @@ static val makeQuote(engine* engine, ast* ast) {
         case AST_INQUOTE: {
             astInquote* inquote = (astInquote*)ast;
             return eval(engine, inquote->expr);
+        }
+        case AST_FN: {
+            return makeFnQuote(engine, ast);
         }
         #include "quote_gen.c"
     }

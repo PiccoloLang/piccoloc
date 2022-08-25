@@ -11,6 +11,8 @@
 #include "builders/builders.h"
 #include "var_find.h"
 #include "chrono.h"
+#include "types.h"
+#include "analysis_pass.h"
 
 #include <stdio.h>
 
@@ -69,7 +71,10 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
 
     LLVMModuleRef mod = LLVMModuleCreateWithName("module");
     
-    LLVMTypeRef fnType = LLVMFunctionType(LLVMVoidType(), NULL, 0, false);
+    types t;
+    initTypes(&t);
+
+    LLVMTypeRef fnType = LLVMFunctionType(t.intType, NULL, 0, false);
     LLVMValueRef mainFn = LLVMAddFunction(mod, "main", fnType);
     LLVMBasicBlockRef block = LLVMAppendBasicBlock(mainFn, "");
     LLVMBuilderRef builder = LLVMCreateBuilder();
@@ -81,10 +86,10 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
     LLVMPositionBuilderAtEnd(builder, block);
 
     rtlibFuncs rtlib;
-    initRTlib(&rtlib, mod);
+    initRTlib(&rtlib, mod, &t);
 
     compiler comp;
-    initCompiler(&comp, builder, mainFn, &pkg, &rtlib);
+    initCompiler(&comp, mod, builder, mainFn, &pkg, &rtlib, &t);
 
     parser prsr;
     initParser(&prsr, pkg.src);
@@ -92,21 +97,22 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
     buildCall(&comp, comp.rtlib->initRTLib.type, comp.rtlib->initRTLib.func, 1, buildString(&comp, pkg.src));
     
     ast* curr = parseExprList(&prsr, TOKEN_EOF);
+    analyze(curr);
     findVars(&comp, curr);
+    
 
     compileVarDecls(&comp, 0);
     assignChrono(curr, 1);
 
     while(curr != NULL) {
-        ast* ast = curr;
-        // dumpAst(curr);
-        curr = curr->next;
-        if(!prsr.hadError) {
-            LLVMValueRef val = compile(&comp, ast);
-            LLVMValueRef args[] = {val};
-            LLVMBuildCall2(builder, printFnType, printFn, args, 1, "");
-            prsr.hadError = false;
+        //dumpAst(curr);
+        if(curr->containsEval) {
+            insertDynvarConversion(&comp, curr);
         }
+        LLVMValueRef val = compile(&comp, curr);
+        LLVMValueRef args[] = {val};
+        LLVMBuildCall2(builder, printFnType, printFn, args, 1, "");
+        curr = curr->next;
     }
 
     if(comp.hadError)
@@ -115,7 +121,9 @@ int main(int argc, const char** argv) { // TODO: clean up this *absolute mess*, 
     freeParser(&prsr);
     freeCompiler(&comp);
 
-    LLVMBuildRet(builder, NULL);
+    LLVMBuildRet(builder, buildInt(&comp, 0));
+
+    //LLVMDumpModule(mod);
 
     freePackage(&pkg);
 
